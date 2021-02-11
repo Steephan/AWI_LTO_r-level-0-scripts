@@ -11,6 +11,8 @@
 #
 # last modifications:
 #
+#
+# 2021-02-11 Sl out source of Dsn correction to file SaSnow2012_DSN_correction.dat
 # 2020-09-09 CL after discussion with Niko "Dist_centre" and "Dist_crack" added
 #               ==> "Dsn_centre" and "Dsn_crack" would be wrong because the sensors measure only the horizontal distance.
 #               Please note, that the first letter has to be a capital letter because column names with the pattern "dist"
@@ -50,7 +52,7 @@ origin <- "1970-01-01"
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
 
-for (year in 2017:recent.year) {
+for (year in 2012:recent.year) {
 
   cat("\nProcessing year", year, "\n ==================== \n\n")
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -77,25 +79,25 @@ for (year in 2017:recent.year) {
     colnames(dada) = paste0("V", seq_len(ncol(dada)))
     # skip file if wrong year
     if (as.numeric(substr(lapply(dada[1, 1], as.character), 1, 4)) > year || as.numeric(substr(lapply(dada[length(dada[, 1]), 1], as.character), 1, 4)) < year) {next}
-    cat(paste(dada[1, 1], " to ", dada[length(dada[, 1]), 1], " ", files2read[i]))
+   # cat(paste(dada[1, 1], " to ", dada[length(dada[, 1]), 1], " ", files2read[i]))
 
     # check and remove double entries
     # check for fully double entries
     if (("TRUE" %in% duplicated(dada)) == TRUE) {
       doouble <- duplicated(dada)
-      cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
-      "first entry:", dada[which(doouble == "TRUE")[1], 1], "\n last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
+      #cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
+      #"first entry:", dada[which(doouble == "TRUE")[1], 1], "\n last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dada <- unique(dada) # remove double entries
     } else if (("TRUE" %in% duplicated(dada[, 1])) == TRUE) {
       # check for multiple different data records for same! timestamp
       doouble <- duplicated(dada[, 1])
-      cat(paste(length(which(doouble == "TRUE")), "multiple records found in file", files2read[i], "\n",
-      "first entry:", dada[which(doouble == "TRUE")[1], 1], "\n last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
+      #cat(paste(length(which(doouble == "TRUE")), "multiple records found in file", files2read[i], "\n",
+      #"first entry:", dada[which(doouble == "TRUE")[1], 1], "\n last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dd <- which(dada[, 1] %in% dada[which(doouble == "TRUE"), 1])
       dada <- dada[-dd, ] # remove double entries
 
     } else {
-     cat("No double data entries found in", files2read[i], "\n\n")
+     #cat("No double data entries found in", files2read[i], "\n\n")
     }
 
     dada[, 1] <- as.numeric(as.POSIXct(dada[, 1], format = '%Y-%m-%d %H:%M:%S', origin = origin, tz = "UTC"))
@@ -175,129 +177,26 @@ for (year in 2017:recent.year) {
   ### special calculation of snowdepth
   # ==> offset correction
   #
-  if (year == 2012) {
-    ####
-    snow.free <- c(1, which(db.sasnow[, 1] == "2012-09-15 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0, se.1, se.2, se.3, se.4, se.5, se.6, se.7, se.8, se.9
-    spring.corr <- c(1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 0, 0) # the old from last year
-    autum.corr <-  c(1.335, 1.360, 1.415, 1.000, 1.260, 1.185, 1.360, 1.205, 1.340, 1.000, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:10) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2013) {
-    snow.free <- c(which(db.sasnow[, 1] == "2013-08-30 00:00"),
-                  which(db.sasnow[, 1] == "2013-08-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0, se.1, se.2, se.3, se.4, se.5, se.6, se.7, se.8, se.9
-    spring.corr <- c(1.335, 1.360, 1.415, 1.000, 1.260, 1.185, 1.360, 1.205, 1.340, 1.000, 0, 0) # the old from last year
-    autum.corr <-  c(1.335, 1.360, 1.415, 1.325, 1.250, 1.185, 1.365, 1.205, 1.355, 1.420, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2014) {### special calculation of snowdepth
-    ####
-    snow.free <- c(which(db.sasnow[, 1] == "2014-06-30 00:00"),
-                  which(db.sasnow[, 1] == "2014-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0, se.1, se.2, se.3, se.4, se.5, se.6, se.7, se.8, se.9
-    spring.corr <- c(1.335, 1.360, 1.415, 1.325, 1.250, 1.185, 1.365, 1.205, 1.355, 1.420, 0, 0) # the old from last year
-    autum.corr <-  c(1.335, 1.355, 1.425, 1.325, 1.250, 1.200, 1.365, 1.225, 1.370, 1.415, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i]  <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2015) {### special calculation of snowdepth
-    ####
-    snow.free <- c(which(db.sasnow[, 1] == "2015-06-30 00:00"),
-                  which(db.sasnow[, 1] == "2015-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0, se.1, se.2, se.3, se.4, se.5, se.6, se.7, se.8, se.9
-    spring.corr <- c(1.335, 1.355, 1.425, 1.325, 1.250, 1.200, 1.365, 1.225, 1.370, 1.415, 0, 0) # the old from last year
-    autum.corr <-  c(1.270, 1.325, 1.400, 1.320, 1.255, 1.215, 1.375, 1.235, 1.375, 1.405, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2016) {### special calculation of snowdepth
-    ####
-    snow.free <- c(which(db.sasnow[, 1] == "2016-06-30 00:00"),
-                  which(db.sasnow[, 1] == "2016-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0,se.1,se.2, se.3, se.4, se.5, se.6, se.7, se.8, se.9
-    spring.corr <- c(1.270, 1.325, 1.400, 1.320, 1.255, 1.215, 1.375, 1.235, 1.375, 1.405, 0, 0) # the old from last year
-    autum.corr <-  c(1.320, 1.360, 1.415, 1.350, 1.300, 1.235, 1.360, 1.245, 1.390, 1.440, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i]   <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i]  <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2017) {### special calculation of snowdepth
-    ####
-    snow.free <- c(which(db.sasnow[, 1] == "2017-06-30 00:00"),
-                  which(db.sasnow[, 1] == "2017-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0, se.1, se.2,se.3, se.4, se.5, se.6, se.7,se.8, se.9
-    spring.corr <- c(1.320, 1.360, 1.415, 1.350, 1.300, 1.235, 1.360, 1.245, 1.390, 1.440, 0, 0) # the old from last year
-    autum.corr <-  c(1.335, 1.370, 1.390, 1.350, 1.290, 1.240, 1.420, 1.250, 1.380, 1.435, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2018) {### special calculation of snowdepth
-    ####
-    snow.free <- c(which(db.sasnow[, 1] == "2018-06-30 00:00"),
-                  which(db.sasnow[, 1] == "2018-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0,se.1,se.2,se.3,se.4,se.5,se.6,se.7,se.8,se.9
-    spring.corr <- c(1.335, 1.370, 1.390, 1.350, 1.290, 1.240, 1.420, 1.250, 1.380, 1.435, 0, 0) # the old from last year
-    autum.corr <-  c(1.340, 1.380, 1.415, 1.350, 1.320, 1.270, 1.440, 1.285, 1.375, 1.425, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2019) {### special calculation of snowdepth
-    snow.free <- c(which(db.sasnow[, 1] == "2019-06-30 00:00"),
-                  which(db.sasnow[, 1] == "2019-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0,se.1,se.2,se.3,se.4,se.5,se.6,se.7,se.8,se.9
-    spring.corr <- c(1.340, 1.380, 1.415, 1.350, 1.320, 1.270, 1.440, 1.285, 1.375, 1.425, 0, 0) # the old from last year
-    autum.corr <-  c(1.340, 1.380, 1.415, 1.350, 1.320, 1.270, 1.440, 1.285, 1.375, 1.425, 0, 0) # the new one based on maximum dist in august
-
-    for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
-      db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
-      db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-    }
-  } else if (year == 2020) {### special calculation of snowdepth
-    snow.free <- c(which(db.sasnow[, 1] == "2020-06-30 00:00"),
-                   which(db.sasnow[, 1] == "2020-06-30 00:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  se.0,se.1,se.2,se.3,se.4,se.5,se.6,se.7,se.8,se.9
-    spring.corr <- c(1.340, 1.380, 1.415, 1.350, 1.320, 1.270, 1.440, 1.285, 1.375, 1.425, 0, 0) # the old from last year
-    autum.corr <-  c(1.340, 1.380, 1.415, 1.350, 1.320, 1.270, 1.440, 1.285, 1.375, 1.425, 0, 0) # the new one based on maximum dist in august
   
+  dsn.corr <- read.table(paste0(path$w[path$n == "script.p"], "database_R/SaSnow2012_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
+  
+    spring.corr <- as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year-1)),3:14])) # the old from last year
+    autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year)),3:14])) # the new one based on maximum dist in august
+ 
+    
+    snow.free <- c(which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year))])),
+                   which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year))])))
+   
     for (i in 1:12) {
-      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], db.sasnow[1:snow.free[1], 25 + i])
+      db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], as.numeric(db.sasnow[1:snow.free[1], 25 + i]))
       db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
       db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
-  }
-}  
+    }
+   
+# if (year == 2019) {### recalculation of temperature correction ... sensor failure since 2019
+#   } else if (year == 2020) {### recalculation of temperature correction ... sensor failure since 2019
+#   
+# }
   
   
   #db.sasnow[, 1] <- format( as.POSIXct(db.sasnow[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
