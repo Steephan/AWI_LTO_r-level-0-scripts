@@ -72,19 +72,15 @@
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
-#   path <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
-#   path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 #############################################################################
 
@@ -111,18 +107,18 @@ for (year in run.year) {
   #colnames(compl.temp)<-c("UTC","erste")
 
   if (year == 2013) {
-    files.laser <- list.files(paste0(paste0(path$w[path$n == "BaSn.raw.p"]), year, "/"), pattern = ".dat")
+    files.laser <- list.files(paste0(paste0(p.1$w[p.1$n == "BaSn.raw.p"]), year, "/"), pattern = ".dat")
     ##### nchste zeile muss aber raus!!!!!
     files.laser <- files.laser[-c(1, 2, 8)]# fragwrdige 2 Startdateien, 8 fast komplett Ausreisser
   } else if (year == 2015) {
-    files.laser <- list.files(paste0(paste0(path$w[path$n == "BaSn.raw.p"]), year, "/"), pattern = ".dat")
+    files.laser <- list.files(paste0(paste0(p.1$w[p.1$n == "BaSn.raw.p"]), year, "/"), pattern = ".dat")
   } else {
-    files.laser <- list.files(paste0(paste0(path$w[path$n == "BaSn.raw.p"]), year, "/"), pattern = ".dat")
+    files.laser <- list.files(paste0(paste0(p.1$w[p.1$n == "BaSn.raw.p"]), year, "/"), pattern = ".dat")
   }
 
   for (lola in (1:length(files.laser))) {
-    #data.laser <- suppressWarnings(read.table(paste0(path$w[path$n=="BaSn.raw.p"],year,"/",files.laser[lola]),header=F,dec=".",sep=" ", fileEncoding="latin1"))[,1:6]
-    txt.laser <- readLines(paste0(path$w[path$n == "BaSn.raw.p"], year, "/", files.laser[lola]), encoding = "unknown", warn = F)
+    #data.laser <- suppressWarnings(read.table(paste0(p.1$w[p.1$n=="BaSn.raw.p"],year,"/",files.laser[lola]),header=F,dec=".",sep=" ", fileEncoding="latin1"))[,1:6]
+    txt.laser <- readLines(paste0(p.1$w[p.1$n == "BaSn.raw.p"], year, "/", files.laser[lola]), encoding = "unknown", warn = F)
     # cat(txt.laser[1],"\n")
     ###
     # select only those lines of the txt.laser file which consist of 45 characters (==> Attention! For the format of the character string, the type "bytes" has to be used)
@@ -195,7 +191,7 @@ for (year in run.year) {
   }
   #######################
 
-  write.table(db.basnow, paste0(paste(path$w[path$n == "LV0.p"]), "BaSnow2013/00_full_dataset/BaSnow2013_", year, "_lv0.dat"),
+  write.table(db.basnow, paste0(paste(p.1$w[p.1$n == "LV0.p"]), "BaSnow2013/00_full_dataset/BaSnow2013_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
 
   cat("#\n# BaSnow2013 ", year, "without problems!\n#\n")

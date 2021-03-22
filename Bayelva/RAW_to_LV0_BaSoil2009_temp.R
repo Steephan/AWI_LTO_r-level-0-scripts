@@ -19,20 +19,16 @@
 #############################################################################
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
-# if (.Platform$OS.type = =   "windows") {
-#   path <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
-#   path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 #############################################################################
 
@@ -61,16 +57,16 @@ for (year in run.year) {
 
   db.now[, c(2:11)] <- NA
   db.now[, 12] <- 0
-  files.temp <- dir(paste0(path$w[path$n == "BaS.raw3.p"]), pattern = glob2rx("*.dat"))
+  files.temp <- dir(paste0(p.1$w[p.1$n == "BaS.raw3.p"]), pattern = glob2rx("*.dat"))
 
   if (year >= 2015) {
-    files.temp <- c(files.temp, dir(paste0(path$w[path$n == "BaS.onl.p"]), pattern = glob2rx("*TempOnline.dat")))
+    files.temp <- c(files.temp, dir(paste0(p.1$w[p.1$n == "BaS.onl.p"]), pattern = glob2rx("*TempOnline.dat")))
   }
 
   for (lola in 1:length(files.temp)) {
-    inz.path <- paste0(path$w[path$n == "BaS.raw3.p"])
+    inz.path <- paste0(p.1$w[p.1$n == "BaS.raw3.p"])
     if (year >= 2015 && lola == length(files.temp)) {
-      inz.path <- paste0(path$w[path$n == "BaS.onl.p"])
+      inz.path <- paste0(p.1$w[p.1$n == "BaS.onl.p"])
     }
 
     data.temp <- read.table(paste(inz.path, files.temp[lola], sep = ""),
@@ -108,7 +104,7 @@ for (year in run.year) {
   #                     "Ts_55", "Ts_71", "Ts_89", "Ts_141", "TableFlag")
   db.now[, 1] <- format(as.POSIXct(seq(start.date, end.date, by = "hour"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
-  write.table(db.now, paste0(paste0(path$w[path$n == "LV0.p"]) , "BaSoil2009/01_temperature/BaSoil2009_Ts_", year, "_lv0.dat"),
+  write.table(db.now, paste0(paste0(p.1$w[p.1$n == "LV0.p"]) , "BaSoil2009/01_temperature/BaSoil2009_Ts_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
 
   cat("#\n# BaSoil2009_temp ", year, "without problems!\n#\n")

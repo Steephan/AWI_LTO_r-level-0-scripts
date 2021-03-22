@@ -15,20 +15,16 @@
 #############################################################################
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
-# if (.Platform$OS.type  ==  "windows") {
-#   path <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
-#   path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 #############################################################################
 
@@ -56,12 +52,12 @@ for (year in run.year) {
 
   db.now[, c(2:11)] <- NA
 
-  #files.zip  <- dir(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/04_txt_export/"), pattern = glob2rx("*.zip"))
-  files.zip <- list.dirs(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/04_txt_export/"), full.names = FALSE)[-1]
+  #files.zip  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/04_txt_export/"), pattern = glob2rx("*.zip"))
+  files.zip <- list.dirs(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/04_txt_export/"), full.names = FALSE)[-1]
 
-  #files.temp  <- dir(paste0(path$w[path$n == "BaHo.onl.p"], "/realtime_rsk/"), pattern = glob2rx("*realtime.rsk"))
+  #files.temp  <- dir(paste0(p.1$w[p.1$n == "BaHo.onl.p"], "/realtime_rsk/"), pattern = glob2rx("*realtime.rsk"))
   for (i in 1:length(files.zip)) {
-    data.temp <- read.table(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/04_txt_export/", files.zip[i], "/", files.zip[i], "_data.txt"), sep = ",", header = T)
+    data.temp <- read.table(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/04_txt_export/", files.zip[i], "/", files.zip[i], "_data.txt"), sep = ",", header = T)
     colnames(data.temp) <- c("V1", "channel01", "channel02", "channel03", "channel04",
                            "channel05", "channel06", "channel07", "channel08", "channel09", "channel10")
     data.temp[, 1] <- as.numeric(as.POSIXct(data.temp[, 1], format = '%Y-%m-%d %H:%M:%S.000', tz = "UTC"))
@@ -74,8 +70,8 @@ for (year in run.year) {
 
 
   # if(year == 2015) {#import minute_based file
-  #   min.raw  <- dir(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/01_minute_based/"), pattern = glob2rx("*.rsk"))
-  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/01_minute_based/"), min.raw))
+  #   min.raw  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/01_minute_based/"), pattern = glob2rx("*.rsk"))
+  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/01_minute_based/"), min.raw))
   #   start.tach <- as.numeric(as.character("20150904"))
   #   start.zeit <- as.numeric(as.character("1313"))
   #   data.temp <- matrix(ncol = 11, nrow = length(dbReadTable(db, "data")[, 1]), -999)
@@ -93,11 +89,11 @@ for (year in run.year) {
 
 
 
-  # files.raw  <- dir(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/02_30_minute_based/"), pattern = glob2rx("*.rsk"))
-  # files.temp  <- dir(paste0(path$w[path$n == "BaHo.onl.p"], "/realtime_rsk/"), pattern = glob2rx("*realtime.rsk"))
+  # files.raw  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/02_30_minute_based/"), pattern = glob2rx("*.rsk"))
+  # files.temp  <- dir(paste0(p.1$w[p.1$n == "BaHo.onl.p"], "/realtime_rsk/"), pattern = glob2rx("*realtime.rsk"))
   # if(year == 2015) {#import minute_based file
-  #   min.raw  <- dir(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/01_minute_based/"), pattern = glob2rx("*.rsk"))
-  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/01_minute_based/"), min.raw))
+  #   min.raw  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/01_minute_based/"), pattern = glob2rx("*.rsk"))
+  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/01_minute_based/"), min.raw))
   #   start.tach <- as.numeric(as.character("20150904"))
   #   start.zeit <- as.numeric(as.character("1313"))
   #   data.temp <- matrix(ncol = 11, nrow = length(dbReadTable(db, "data")[, 1]), -999)
@@ -114,7 +110,7 @@ for (year in run.year) {
   # }
 
   # for (lola in (1:length(files.raw))) {
-  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/02_30_minute_based/"), files.raw[lola]))
+  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/02_30_minute_based/"), files.raw[lola]))
   #
   #   end.tach <- as.numeric(substr(as.character(files.raw[lola]), 8, 15))
   #   end.zeit <- as.numeric(substr(as.character(files.raw[lola]), 17, 18))
@@ -138,9 +134,9 @@ for (year in run.year) {
   #   }
   # }
   # if(year == 2017) {#import 5-minute_based file
-  #   min.raw  <- dir(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/01_five_minute_based/"), pattern = glob2rx("*.rsk"))
+  #   min.raw  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/01_five_minute_based/"), pattern = glob2rx("*.rsk"))
   #   for (lola in (1:length(min.raw))) {
-  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(path$w[path$n == "RAW.p"], "/BaHole2015/01_five_minute_based/"), min.raw[lola]))
+  #   db <- dbConnect(SQLite(), dbname = paste0(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015/01_five_minute_based/"), min.raw[lola]))
   #   start.tach <- as.numeric(as.character("20150904"))
   #   start.zeit <- as.numeric(as.character("1313"))
   #
@@ -172,7 +168,7 @@ for (year in run.year) {
 
   db.now[, 1] <- format(as.POSIXct(seq(start.date, end.date, by = "hour"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
-  write.table(db.now, paste0(paste0(path$w[path$n == "LV0.p"]) , "BaHole2015/00_full_dataset/BaHole2015_", year, "_lv0.dat"),
+  write.table(db.now, paste0(paste0(p.1$w[p.1$n == "LV0.p"]) , "BaHole2015/00_full_dataset/BaHole2015_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
 
   cat("#\n# level0 BaHole2015: ", year, "without problems!\n#\n")
@@ -200,9 +196,9 @@ for (year in run.year) {
 #     #############################################################################################################
 
 # if(year> = 2016) {
-#   old.style  <- dir(paste0(path$w[path$n == "RAW.p"], "/BaHole2015"), pattern = glob2rx("*.txt"))
+#   old.style  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015"), pattern = glob2rx("*.txt"))
 #   for (i in 1:length(old.style)) {
-#   dada <- read.table(paste0(path$w[path$n == "RAW.p"], "BaHole2015/", old.style[i]), sep = "\t", dec = ".", header = F, skip = 2, col.names = paste0("V", seq_len(13)), fill = TRUE)
+#   dada <- read.table(paste0(p.1$w[p.1$n == "RAW.p"], "BaHole2015/", old.style[i]), sep = "\t", dec = ".", header = F, skip = 2, col.names = paste0("V", seq_len(13)), fill = TRUE)
 #   #print(paste(dada[1, 2], "     to     ", dada[length(dada[, 1]), 2]))
 #   dada[, 2] <- as.numeric(as.POSIXct(dada[, 2], format = '%d.%m.%Y %H:%M:%S', origin = origin, tz = "UTC"))
 #   dada[, 2] <- round(dada[, 2], -2)
@@ -233,7 +229,7 @@ for (year in run.year) {
 # ### not neccesary at this moment
 # if(year == 2016 & length(files.temp)>0) {# import the online files
 #   for (lola in (1:length(files.temp))) {
-#     db <- dbConnect(SQLite(), dbname = paste0(paste0(path$w[path$n == "BaHo.onl.p"], "/realtime_rsk/"), files.temp[lola]))
+#     db <- dbConnect(SQLite(), dbname = paste0(paste0(p.1$w[p.1$n == "BaHo.onl.p"], "/realtime_rsk/"), files.temp[lola]))
 #     #############################################################################################################
 #     ##
 #     ##  difference to raw-files in name as date

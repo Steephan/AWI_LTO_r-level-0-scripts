@@ -25,8 +25,8 @@
 #
 #  last modifications:
 #  2020-09-22 CL correction of the description of column names for file "20150909BaMet2010_bk2Online.dat".
-#                The file was wrongly stored in paste0(path$w[path$n == "RAW.p"], "BaMet2010/bk2/2015/") and is
-#                moved now to folder paste0(path$w[path$n == "RAW.p"], "BaMet2015/")
+#                The file was wrongly stored in paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2015/") and is
+#                moved now to folder paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2015/")
 #  2020-08-12 NB new offset for Dsn in 2020
 #  2020-04-30 CL add re-calculation of SwNet, LwNet and Albedo after year 2017, because of re-calculation of the In and Out radiation
 #                add calculation of RadNet, analogue to the netto radiation for the Pangaea data set
@@ -56,20 +56,16 @@
 #############################################################################
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
-# if (.Platform$OS.type ==  "windows") {
-#   path <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#   p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
-#   path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 #############################################################################
 
@@ -77,13 +73,13 @@
 #options(scipen = 100) # for non-exponential display of numeric values
 
 #origin <- "1970-01-01"
-folders <- c(paste0(path$w[path$n == "RAW.p"], "BaMet2010/bk0/"),
-           paste0(path$w[path$n == "RAW.p"], "BaMet2010/bk1/"),
-           paste0(path$w[path$n == "RAW.p"], "BaMet2010/bk2/2015/"),
-           #   paste0(path$w[path$n == "RAW.p"], "BaMet2010/bk2/2016/" ),
-           paste0(path$w[path$n == "RAW.p"], "BaMet2015/"),
-           paste0(path$w[path$n == "RAW.p"], "BaMet2010/bk2/"),
-           paste0(path$w[path$n == "ONL.p"], "BaMet2015/"))
+folders <- c(paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk0/"),
+           paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk1/"),
+           paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2015/"),
+           #   paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2016/" ),
+           paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2015/"),
+           paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/"),
+           paste0(p.1$w[p.1$n == "ONL.p"], "BaMet2015/"))
 
 
 ########
@@ -424,11 +420,11 @@ for (year in run.year) {
   ## write tables
   #if (file.exists(paste(out.path, "data", sep = "")) ==  FALSE) { dir.create(paste(out.path, "data/", sep = "")) }
   # write.table(db.bamet[as.numeric(format(as.POSIXct(db.bamet[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
-  #             paste0(paste(path$w[path$n == "LV0.p"]) , "BaMet2009/00_full_dataset/BaMet2009_", year, ".dat"), quote = F, dec = ".", sep = ",", row.names = F)
+  #             paste0(paste(p.1$w[p.1$n == "LV0.p"]) , "BaMet2009/00_full_dataset/BaMet2009_", year, ".dat"), quote = F, dec = ".", sep = ",", row.names = F)
 
-  write.table(db.bamet, paste0(paste(path$w[path$n == "LV0.p"]), "BaMet2009/00_full_dataset/BaMet2009_", year, "_lv0.dat"),
+  write.table(db.bamet, paste0(paste(p.1$w[p.1$n == "LV0.p"]), "BaMet2009/00_full_dataset/BaMet2009_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
-  write.table(db.bamet[, c(1, 14:17)], paste0(paste(path$w[path$n == "LV0.p"]), "BaMet2009/05_snow_depth/BaMet2009_Dsn_", year, "_lv0.dat"),
+  write.table(db.bamet[, c(1, 14:17)], paste0(paste(p.1$w[p.1$n == "LV0.p"]), "BaMet2009/05_snow_depth/BaMet2009_Dsn_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
   cat("#\n# BaMet2009 ", year, " without problems!\n#\n")
 

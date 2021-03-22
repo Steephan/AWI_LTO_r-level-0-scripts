@@ -51,19 +51,15 @@
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
-#     path <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#     maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#     p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-#     p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#     source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
-#     path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#     maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#     p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#     p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#
-#     source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 #############################################################################
 ## step 1.02
@@ -109,7 +105,7 @@ for (year in run.year) {
   ## step 1.05
   ## set input.path and list all files
   #############################################################################
-  inz.path <- paste0(path$w[path$n == "ONL.p"], "BaSnow2019sr/")
+  inz.path <- paste0(p.1$w[p.1$n == "ONL.p"], "BaSnow2019sr/")
   files2read <- list.files(inz.path, pattern = "*.dat")
   #############################################################################
   ## step 1.06
@@ -272,7 +268,7 @@ for (year in run.year) {
   #############################################################################
 
   write.table(db.basnow.sr[as.numeric(format(as.POSIXct(db.basnow.sr[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
-              paste0(path$w[path$n == "LV0.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv0.dat"),
+              paste0(p.1$w[p.1$n == "LV0.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
 
   cat("\n#\n# BaSnow2019sr ", year," without problems!\n#\n")
@@ -311,7 +307,7 @@ for (year in run.year) {#2013:2016 2012:aktuell
   ## step 1.05
   ## set input.path and list all files
   #############################################################################
-  inz.path <- paste0(path$w[path$n == "ONL.p"], "BaSnow2019cs/")
+  inz.path <- paste0(p.1$w[p.1$n == "ONL.p"], "BaSnow2019cs/")
   files2read <- list.files(inz.path, pattern = "*.dat")
   #############################################################################
   ## step 1.06
@@ -487,7 +483,7 @@ for (year in run.year) {#2013:2016 2012:aktuell
   #############################################################################
 
   write.table(db.basnow.cs[as.numeric(format(as.POSIXct(db.basnow.cs[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
-              paste0(path$w[path$n == "LV0.p"], "BaSnow2019cs/00_full_dataset/BaSnow2019cs_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
+              paste0(p.1$w[p.1$n == "LV0.p"], "BaSnow2019cs/00_full_dataset/BaSnow2019cs_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
 
   cat("\n#\n# BaSnow2019cs ", year," without problems!\n#\n")
 } # end loop over years
