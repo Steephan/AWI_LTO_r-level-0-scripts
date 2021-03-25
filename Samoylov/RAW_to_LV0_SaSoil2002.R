@@ -6,6 +6,7 @@
 ##
 ##   by: Stephan.Lange@awi.de, Niko.Bornemann@awi.de, Peter.Schreiber@awi.de
 ##   last modified:
+##   2021-03-25 SL git path 
 ##   2020-10-30 CL adapted to script guidelines and implementation in Samoylov_MAIN.R
 ##   2019-05-22 PSc (changed file paths)
 ##
@@ -29,16 +30,18 @@
 ## set path settings for different systems linux vs. windoof
 #############################################################################
 #  to run this script separately, you have to uncomment the next 10 lines!
-# rm(list = ls())
-# if (.Platform$OS.type == "windows") {
-#   path <- read.table("N:/sparc/LTO/R_database/database_R/settings/sa_path_windoof.txt", sep = "\t", header = T)
-#   maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/sa_maintance.txt", sep = "\t", header = T)
-#   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
-# } else {
-#   path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
-# }
+rm(list = ls())
+if (.Platform$OS.type == "windows") {
+  p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+  p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+  
+  source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+} else {
+  p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+  p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+  
+  source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+}
 #############################################################################
 ## step 1.02
 ## set running options years, ...
@@ -81,7 +84,7 @@ for (year_i in run.year) {
   #############################################################################
   ##
   ## read SaMet2010 Airtemperature for Snowdepth correction
-  clima <- read.table(paste0(path$w[path$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year_i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[seq(1, 2 * length(compl.tdr[, 1]), 2), 1:13]
+  clima <- read.table(paste0(p.1$w[p.1$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year_i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[seq(1, 2 * length(compl.tdr[, 1]), 2), 1:13]
 
   ##
   ##
@@ -95,7 +98,7 @@ for (year_i in run.year) {
   #############################################################################
 
 
-  inz.01.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2002/01_Temp_v2/")
+  inz.01.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2002/01_Temp_v2/")
   files.01 <- list.files(inz.01.path, pattern = "*.dat")
   bui <- matrix(nrow = length(files.01), ncol = 2, 1)
   for (i in 1:length(files.01)) {
@@ -103,7 +106,7 @@ for (year_i in run.year) {
     bui[i, 1] <- as.numeric(substr(files.01[i], 14, 17))
   }
   sel.01 <- which(bui[, 1] <= year_i & bui[, 2] >= year_i)
-  inz.02.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2002/02_Data_TDR/01_joined_dataset/")
+  inz.02.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2002/02_Data_TDR/01_joined_dataset/")
   files.02 <- list.files(inz.02.path, pattern = "*.dat")
   hui <- matrix(nrow = length(files.02), ncol = 2, 1)
   for (i in 1:length(files.02)) {
@@ -549,18 +552,18 @@ for (year_i in run.year) {
   # db.sasoil.tdr[,1]<-format( as.POSIXct(db.sasoil.tdr[,1],origin=origin,tz="UTC"),format='%Y-%m-%d %H:%M')
 
   write.table(db.sasoil.total,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2002/00_full_dataset/SaSoil2002_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2002/00_full_dataset/SaSoil2002_", year_i, "_lv0.dat"),
     na = "NA", quote = F, dec = ".", sep = ",", row.names = F
   )
 
   # write.table(db.sasoil.t,
-  #             paste0(path$w[path$n=="LV0.p"],"SaSoil2010/01_soiltemperature/SaSoil2010_Ts_",year_i,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
+  #             paste0(p.1$w[p.1$n=="LV0.p"],"SaSoil2010/01_soiltemperature/SaSoil2010_Ts_",year_i,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
   #
   # write.table(db.sasoil.tdr,
-  #             paste0(path$w[path$n=="LV0.p"],"SaSoil2010/02_soilmoisture/SaSoil2010_TDR_",year_i,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
+  #             paste0(p.1$w[p.1$n=="LV0.p"],"SaSoil2010/02_soilmoisture/SaSoil2010_TDR_",year_i,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
   #
   # write.table(db.sasoil.tdr[,1:5],
-  #             paste0(path$w[path$n=="LV0.p"],"SaSoil2010/05_snowdepth/SaSoil2010_Dsn_",year_i,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
+  #             paste0(p.1$w[p.1$n=="LV0.p"],"SaSoil2010/05_snowdepth/SaSoil2010_Dsn_",year_i,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
   #
 
   cat("\n#\n# sasoil2002 ", year_i, " without problems!\n#\n") # main output

@@ -5,13 +5,13 @@
 ## equal time steps, no gaps, table flag
 ##
 ## by: Stephan.Lange@awi.de & Niko.Bornemann@awi.de
-## last modified: 2019-05-21
+## last modified: 2021-03-25
 ##
 #############################################################################
 #
 # last modifications:
 #
-#
+# 2021-03-25 SL git path and temperature correction
 # 2021-02-11 Sl out source of Dsn correction to file SaSnow2012_DSN_correction.dat
 # 2020-09-09 CL after discussion with Niko "Dist_centre" and "Dist_crack" added
 #               ==> "Dsn_centre" and "Dsn_crack" would be wrong because the sensors measure only the horizontal distance.
@@ -20,7 +20,7 @@
 #
 # DSN correction
 #
-# years 2018 & 2019 with wrong dsn correction!!!!!!!!
+# year.is 2018 & 2019 with wrong dsn correction!!!!!!!!
 #
 #############################################################################
 
@@ -28,19 +28,15 @@
 # to run this script separately, you have to uncomment the next 10 lines!
 rm(list = ls())
 if (.Platform$OS.type == "windows") {
-path <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
-p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
+  p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+  p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
 
-source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+  source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 } else {
-path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
+  p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+  p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
 
-source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+  source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 }
 #############################################################################
 
@@ -52,11 +48,11 @@ origin <- "1970-01-01"
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
 
-for (year in 2012:recent.year) {
+for (year.i in 2015) {# 2012:recent.year
 
-  cat("\nProcessing year", year, "\n ==================== \n\n")
-  start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
-  end.date <- as.POSIXct(paste(year, "-", 12, "-", 31, " 23:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
+  cat("\nProcessing year", year.i, "\n ==================== \n\n")
+  start.date <- as.POSIXct(paste(year.i, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
+  end.date <- as.POSIXct(paste(year.i, "-", 12, "-", 31, " 23:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
 
   # create empty data frame with UTC time stamp every 30 min
   db.sasnow <- matrix(ncol = 98, nrow = length(seq(start.date, end.date, by = "30 min")), -999)
@@ -65,9 +61,9 @@ for (year in 2012:recent.year) {
   db.sasnow[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = '%Y-%m-%d %H:%M:%S'))
   compl.temp[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = '%Y-%m-%d %H:%M:%S'))
   colnames(compl.temp) <- c("UTC", "erste")
+  
 
-
-  inz.path <- paste0(path$w[path$n == "RAW.p"], "SaSnow2012/01_SnowStation/")
+  inz.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSnow2012/01_SnowStation/")
   #cat("\nnow in ", folders[paz], "\n ==================== \n\n")
   files2read <- list.files(inz.path, pattern = "*.dat")
 
@@ -77,8 +73,8 @@ for (year in 2012:recent.year) {
     dada <- read.table(paste(inz.path, files2read[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
     colnames(dada) = paste0("V", seq_len(ncol(dada)))
-    # skip file if wrong year
-    if (as.numeric(substr(lapply(dada[1, 1], as.character), 1, 4)) > year || as.numeric(substr(lapply(dada[length(dada[, 1]), 1], as.character), 1, 4)) < year) {next}
+    # skip file if wrong year.i
+    if (as.numeric(substr(lapply(dada[1, 1], as.character), 1, 4)) > year.i || as.numeric(substr(lapply(dada[length(dada[, 1]), 1], as.character), 1, 4)) < year.i) {next}
    # cat(paste(dada[1, 1], " to ", dada[length(dada[, 1]), 1], " ", files2read[i]))
 
     # check and remove double entries
@@ -156,7 +152,7 @@ for (year in 2012:recent.year) {
       "Snow_Temp_Avg(5)", "Snow_Temp_Avg(9)", "Snow_Temp_Avg(10)", "Snow_Temp_Avg(11)", "Snow_Temp_Avg(12)", "Snow_Temp_Avg(8)", "Snow_Temp_Avg(4)",
       "Snow_Temp_Avg(3)", "Snow_Temp_Avg(2)", "Snow_Temp_Avg(6)", "Snow_Temp_Avg(7)", "Surf_Temp_Avg(1)", "Surf_Temp_Avg(2)", "Surf_Temp_Avg(3)",
       "Surf_Temp_Avg(4)", "Air_Temp_Avg", "Soil_Temp_Avg(1)", "Soil_Temp_Avg(2)", "Soil_Temp_Avg(3)", "Soil_Temp_Avg(4)", "Soil_Temp_Avg(5)", "Soil_Temp_Avg(6)",
-      "Soil_Temp_Avg(8)", "Soil_Temp_Avg(7)")] # 7 & 8 sind hier vertauscht!!!
+      "Soil_Temp_Avg(8)", "Soil_Temp_Avg(7)")] 
     # merge all data into one dataframe
     newdf.a <- merge(compl.temp, dada, all.x = T, by = "UTC")
     # achtung ohne dsn spalten
@@ -170,22 +166,39 @@ for (year in 2012:recent.year) {
     db.sasnow[is.nan(as.numeric(db.sasnow[, kl])), kl] <- NA
   }
 
-  #db.sasnow[, c("Dsn_0", "Dsn_1", "Dsn_2", "Dsn_3", "Dsn_4", "Dsn_5", "Dsn_6", "Dsn_7", "Dsn_8", "Dsn_9")] <- NA
+  
+  #############################################################################
+  #############################################################################
+  ##
+  ## read SaMet2010 Airtemperature for Snowdepth correction
+  clima <- read.table(paste0(p.1$w[p.1$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year.i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[, 1:5]
+  
+  for (ii in 1:12) {
+    db.sasnow[,25 + ii] <- round(db.sasnow[, 37+ii] * ((clima$Tair_a_50 + 273.15) / 273.15)^0.5, 3)
+    
+  }
+  
+  ##
+  ##
+  #############################################################################
+  #############################################################################
+  
   db.sasnow[, 1] <- format( as.POSIXct(db.sasnow[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
+  
   #############################
   ### special calculation of snowdepth
   # ==> offset correction
   #
   
-  dsn.corr <- read.table(paste0(path$w[path$n == "script.p"], "database_R/SaSnow2012_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
+  dsn.corr <- read.table(paste0(p.1$w[p.1$n == "settings.p"], "SaSnow2012_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
   
-    spring.corr <- as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year-1)),3:14])) # the old from last year
-    autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year)),3:14])) # the new one based on maximum dist in august
+    spring.corr <- as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year.i-1)),3:14])) # the old from last year.i
+    autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year.i)),3:14])) # the new one based on maximum dist in august
  
     
-    snow.free <- c(which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year))])),
-                   which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year))])))
+    snow.free <- c(which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])),
+                   which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])))
    
     for (i in 1:12) {
       db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], as.numeric(db.sasnow[1:snow.free[1], 25 + i]))
@@ -193,13 +206,6 @@ for (year in 2012:recent.year) {
       db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
     }
    
-# if (year == 2019) {### recalculation of temperature correction ... sensor failure since 2019
-#   } else if (year == 2020) {### recalculation of temperature correction ... sensor failure since 2019
-#   
-# }
-  
-  
-  #db.sasnow[, 1] <- format( as.POSIXct(db.sasnow[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
   # new names
   colnames(db.sasnow) <- c("UTC", "Ubat", "Tpan_CR1000", "Tpan_SPA",
@@ -217,12 +223,12 @@ for (year in 2012:recent.year) {
   "Ts_00", 	"Ts_05", 	"Ts_10", 	"Ts_20", 	"Ts_40", 	"Ts_60", "Ts_80", 	"Ts_100",
   "Dsn_0", "Dsn_1", "Dsn_2", "Dsn_3", "Dsn_4", "Dsn_5", "Dsn_6", "Dsn_7", "Dsn_8", "Dsn_9", "Dist_Centre", "Dist_Crack")
 
-  write.table(db.sasnow[as.numeric(format(as.POSIXct(db.sasnow[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, -2],
-              paste0(path$w[path$n == "LV0.p"], "SaSnow2012/00_full_dataset/SaSnow2012_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
+  write.table(db.sasnow[as.numeric(format(as.POSIXct(db.sasnow[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year.i, -2],
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSnow2012/00_full_dataset/SaSnow2012_", year.i, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
 
-  cat("\n#\n# ", year, " - SaSnow2012 without problems!\n#\n")
+  cat("\n#\n# ", year.i, " - SaSnow2012 without problems!\n#\n")
 
-} # end loop over years
+} # end loop over year.is
 
 
 
