@@ -48,7 +48,7 @@ origin <- "1970-01-01"
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
 
-for (year.i in 2015) {# 2012:recent.year
+for (year.i in 2019) {# 2012:recent.year
 
   cat("\nProcessing year", year.i, "\n ==================== \n\n")
   start.date <- as.POSIXct(paste(year.i, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -170,14 +170,14 @@ for (year.i in 2015) {# 2012:recent.year
   #############################################################################
   #############################################################################
   ##
-  ## read SaMet2010 Airtemperature for Snowdepth correction
+  ## read SaMet2002 Airtemperature for Snowdepth correction
+  ##
   clima <- read.table(paste0(p.1$w[p.1$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year.i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[, 1:5]
   
   for (ii in 1:12) {
+    # overwrite distcor_0-11
     db.sasnow[,25 + ii] <- round(db.sasnow[, 37+ii] * ((clima$Tair_a_50 + 273.15) / 273.15)^0.5, 3)
-    
-  }
-  
+   }
   ##
   ##
   #############################################################################
@@ -229,6 +229,8 @@ for (year.i in 2015) {# 2012:recent.year
   cat("\n#\n# ", year.i, " - SaSnow2012 without problems!\n#\n")
 
 } # end loop over year.is
-
+# > plot(db.sasnow[,28])
+# > plot(db.sasnow[,28+12])
+# > plot(db.sasnow[,90])
 
 
