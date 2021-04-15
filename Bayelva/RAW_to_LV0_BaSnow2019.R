@@ -21,6 +21,7 @@
 #############################################################################
 ##
 ## last modifications:
+##  2021-04-12 SL change DSN form lv0 (instead of lv1), add 2021 corrections
 ##  2020-08-18 CL include calculation of "rho_K" (snow density calculated from "SWE_K" and "Dsn")
 ##  2020-08-18 CL "TL" and "KTL" changed to "Tl" and "KTl" (Tl: Thallium)
 ##  2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
@@ -73,7 +74,7 @@
 # to run this script separately, you have to set run.year:
 #
 # run.year <- recent.year
-# run.year <- 2020
+# run.year <- 2019:2021
 #######
 
 #############################################################################
@@ -227,40 +228,22 @@ for (year in run.year) {
   ## calculate Snowheight from distcorr
   #############################################################################
 
-  if (year == 2019) {###  special calculation of snowdepth
-    ####
-    snow.free <- c(which(db.basnow.sr[, 1] == "2019-07-27 08:00"),
-                   which(db.basnow.sr[, 1] == "2019-11-14 12:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    #  spring.corr <- 3.08 # the old from last year ####### Dsn correction #########
-    autum.corr1 <- 3.08 # the new one based on maximum dist in august ######## distcor correction #########
-    autum.corr2 <- 2.33 # since  "2019-11-14 12:00"   check again in summer 2020, old 2.42 height of gamma sonde
-    ind.snow1 <- snow.free[1]:snow.free[2]
-    ind.snow2 <- snow.free[2]:length(db.basnow.sr[, 1])
-    #  db.basnow.sr[1:snow.free[1],10] <- round(spring.corr[1]-as.numeric(db.basnow.sr[1:snow.free[1],9]),3)
-    #db.basnow.sr[snow.free[1]:snow.free[2],9*i]<-0 # snowfree
-    db.basnow.sr[ind.snow1, "Dsn"] <- round(autum.corr1[1] - as.numeric(db.basnow.sr[ind.snow1, "distcor"]), 3)
-    db.basnow.sr[ind.snow2, "Dsn"] <- round(autum.corr2[1] - as.numeric(db.basnow.sr[ind.snow2, "distcor"]), 3)
+  
+  dsn.corr <- read.table(paste0(p.1$w[p.1$n == "settings.p"], "BaSnow2019_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
+  
+  spring.corr <- as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year-1)),3])) # the old from last year.i
+  autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year)),3])) # the new one based on maximum dist in august
+  
+  
+  snow.free <- c(which(db.basnow.sr[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year))])),
+                 which(db.basnow.sr[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year))])))
+  
+  for (i in 1:1) {
+    db.basnow.sr[1:snow.free[1], "Dsn"] <- na.minus(spring.corr[i], as.numeric(db.basnow.sr[1:snow.free[1],  "distcor"]))
+    db.basnow.sr[snow.free[1]:snow.free[2], "Dsn"] <- na.minus(autum.corr[i], db.basnow.sr[snow.free[1]:snow.free[2],  "distcor"]) # snowfree
+    db.basnow.sr[snow.free[2]:length(db.basnow.sr[, 1]),"Dsn"] <- na.minus(autum.corr[i], db.basnow.sr[snow.free[2]:length(db.basnow.sr[, 1]),  "distcor"])
   }
-
-  if (year == 2020) {###  special calculation of snowdepth
-  ####
-    snow.free <- c(which(db.basnow.sr[, 1] == "2020-06-26 14:00"),  # OLD from previous year "2020-07-27 08:00"),
-                   which(db.basnow.sr[, 1] == "2020-11-14 12:00")) # vector of two timesteps
-    # two vectors for snowdepth calculation
-    spring.corr <- 2.33 # the old from last year ####### Dsn correction #########
-    autum.corr <- 2.31 # the new one
-    winter.corr <- 2.31
-
-    ind.snow1 <-            1:snow.free[1]
-    ind.snow2 <- snow.free[1]:snow.free[2]
-    ind.snow3 <- snow.free[2]:length(db.basnow.sr[, 1])
-    #  db.basnow.sr[1:snow.free[1],10] <- round(spring.corr[1]-as.numeric(db.basnow.sr[1:snow.free[1],9]),3)
-    #db.basnow.sr[snow.free[1]:snow.free[2],9*i]<-0 # snowfree
-    db.basnow.sr[ind.snow1, "Dsn"] <- round(spring.corr[1] - as.numeric(db.basnow.sr[ind.snow1, "distcor"]), 3)
-    db.basnow.sr[ind.snow2, "Dsn"] <- round(autum.corr[1] - as.numeric(db.basnow.sr[ind.snow2, "distcor"]), 3)
-    db.basnow.sr[ind.snow3, "Dsn"] <- round(winter.corr[1] - as.numeric(db.basnow.sr[ind.snow3, "distcor"]), 3)
-  }
+  
 
   #############################################################################
   ## step 1.20
@@ -453,9 +436,11 @@ for (year in run.year) {#2013:2016 2012:aktuell
   ## b) rho_K: snow density is calculated from snow depth ("Dsn") and snow water equivalent determined with K ("SWE_K")
   #############################################################################
 
-  ba.snow.sr <- read.table(file = paste0(p.1$w[p.1$n == "LV1.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv1.dat"),
+  # ba.snow.sr <- read.table(file = paste0(p.1$w[p.1$n == "LV1.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv1.dat"),
+  #                          sep = ",", dec = ".", header = T)
+  ba.snow.sr <- read.table(file = paste0(p.1$w[p.1$n == "LV0.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv0.dat"),
                            sep = ",", dec = ".", header = T)
-
+  
   db.basnow.cs <- data.frame(db.basnow.cs, Dsn = NA, rho_K = NA)
   #db.basnow.cs <- cbind(db.basnow.cs, Dsn = NA, SWE_K = NA)
   # a) Dsn
