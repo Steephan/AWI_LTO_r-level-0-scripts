@@ -65,10 +65,10 @@ for (year in run.year) {
   colnames(compl.temp) <- c("UTC", "leer")
 
   db.bahole[, c(2:12)] <- NA
-  files2read <- list.files(paste0(p.1$w[p.1$n == "RAW.p"], "BaHole2021/"), pattern = "*cal*")
+  files2read <- list.files(paste0(p.1$w[p.1$n == "ONL.p"], "BaHole2021/"), pattern = "*cal*")
 
   for (i in 1:length(files2read)) {
-    dada <- read.table(paste0(p.1$w[p.1$n == "RAW.p"], "BaHole2021/", files2read[i], sep = ""),
+    dada <- read.table(paste0(p.1$w[p.1$n == "ONL.p"], "BaHole2021/", files2read[i], sep = ""),
                        sep = ",", dec = ".", header = F, skip = 4, col.names = paste0("V", seq_len(14)), fill = TRUE)
     dada[, 2] <- as.numeric(as.POSIXct(dada[, 1], format = '%Y-%m-%d %H:%M:%S', origin = origin, tz = "UTC"))
     #dada[, 2] <- round(dada[, 2], -2) # not neccessary
