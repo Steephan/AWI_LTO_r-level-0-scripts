@@ -229,7 +229,7 @@ for (year in run.year) {
   #############################################################################
 
   
-  dsn.corr <- read.table(paste0(p.1$w[p.1$n == "settings.p"], "BaSnow2019_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
+  dsn.corr <- read.table(paste0(p.1$w[p.1$n == "settings.p"], "DSNcorr.files/BaSnow2019_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
   
   spring.corr <- as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year-1)),3])) # the old from last year.i
   autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year)),3])) # the new one based on maximum dist in august
