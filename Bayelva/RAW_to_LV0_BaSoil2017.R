@@ -35,12 +35,12 @@
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
 #   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
 #   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
 #   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 #############################################################################
@@ -48,10 +48,10 @@
 ## set options
 #############################################################################
 
-# for non-exponential display of numeric values
-#options(scipen = 100)
-#origin <- "1970-01-01"
-#recent.year <- as.numeric(format(Sys.Date(), "%Y"))
+##### for non-exponential display of numeric values
+# options(scipen = 100)
+# origin <- "1970-01-01"
+# recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
 ########
 # to run this script separately, you have to set run.year:
@@ -79,7 +79,7 @@ for (year in run.year) {
   ## storing table: storing.table with date column + columns for all the variables of the desired end product
   #############################################################################
 
-  cat("\nProcessing year", year, "\n====================\n\n")
+  # cat("\nProcessing year", year, "\n====================\n\n")
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste(year, "-", 12, "-", 31, " 23:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   # set number of columns of storing table according to the number of variables of the end product + 1 for the date column
@@ -118,7 +118,7 @@ for (year in run.year) {
     ## set temporal column names
     #############################################################################
 
-    cat("\nprocessing ", files2read[i], "\n ==================== \n\n")
+    #cat("\nprocessing ", files2read[i], "\n ==================== \n\n")
     file.i <- read.table(paste(input.path, files2read[i], sep = ""),
                        sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
@@ -133,7 +133,7 @@ for (year in run.year) {
     if (as.numeric(substr(lapply(file.i[1, 1], as.character), 1, 4)) > year || as.numeric(substr(lapply(file.i[length(file.i[, 1]), 1], as.character), 1, 4)) < year) {
       next
     }
-    cat(paste(file.i[1, 1], " to ", file.i[length(file.i[, 1]), 1], " ", files2read[i]))
+    #cat(paste(file.i[1, 1], " to ", file.i[length(file.i[, 1]), 1], " ", files2read[i]))
 
     #############################################################################
     ## step 1.10
@@ -144,20 +144,20 @@ for (year in run.year) {
     # Case 2: check for multiple different data records with the same timestamp
     if (("TRUE" %in% duplicated(file.i)) == TRUE) {
       doouble <- duplicated(file.i)
-      cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
-                "first entry:", file.i[which(doouble == "TRUE")[1], 1], "\n  last entry:", file.i[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
+      # cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
+      #           "first entry:", file.i[which(doouble == "TRUE")[1], 1], "\n  last entry:", file.i[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       # remove duplications
       file.i <- unique(file.i)
     } else if (("TRUE" %in% duplicated(file.i[, 1])) == TRUE) {
       doouble <- duplicated(file.i[, 1])
-      cat(paste(length(which(doouble == "TRUE")), "multiple records found in file", files2read[i], "\n",
-                "first entry:", file.i[which(doouble == "TRUE")[1], 1], "\n  last entry:", file.i[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
+      # cat(paste(length(which(doouble == "TRUE")), "multiple records found in file", files2read[i], "\n",
+      #           "first entry:", file.i[which(doouble == "TRUE")[1], 1], "\n  last entry:", file.i[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dd <- which(file.i[, 1] %in% file.i[which(doouble == "TRUE"), 1])
       # remove duplications
       file.i <- file.i[-dd, ]
 
     } else {
-      cat("No duplicated records found in", files2read[i], "\n\n")
+      # cat("No duplicated records found in", files2read[i], "\n\n")
     }
 
     #############################################################################
