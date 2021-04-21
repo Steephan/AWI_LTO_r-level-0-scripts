@@ -59,12 +59,12 @@ for (year in run.year) {
   end.date <- as.POSIXct(paste(year, "-", 12, "-", 31, " 23:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   #end.date    <- as.POSIXct(paste(year, "-", monat, "-", tag, " 23:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
 
-  db.bahole <- matrix(ncol = 12, nrow = length(seq(start.date, end.date, by = "hour")), -999)
+  db.bahole <- matrix(ncol = 13, nrow = length(seq(start.date, end.date, by = "hour")), -999)
   compl.temp <- matrix(ncol = 2, nrow = length(seq(start.date, end.date, by = "hour")))
   compl.temp[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "hour"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC"))
   colnames(compl.temp) <- c("UTC", "leer")
 
-  db.bahole[, c(2:12)] <- NA
+  db.bahole[, c(2:13)] <- NA
   files2read <- list.files(paste0(p.1$w[p.1$n == "ONL.p"], "BaHole2021/"), pattern = "*cal*")
 
   for (i in 1:length(files2read)) {
@@ -82,14 +82,15 @@ for (year in run.year) {
     db.bahole[, 4] <- rowMeans(cbind(db.bahole[, 4], newdf.a[, 7]), na.rm = T)# Ts_50      
     db.bahole[, 5] <- rowMeans(cbind(db.bahole[, 5], newdf.a[, 8]), na.rm = T)# Ts_100       
     db.bahole[, 6] <- rowMeans(cbind(db.bahole[, 6], newdf.a[, 9]), na.rm = T)# Ts_150
-    db.bahole[, 7] <- rowMeans(cbind(db.bahole[, 7], newdf.a[, 10]), na.rm = T)# Ts_250
-    db.bahole[, 8] <- rowMeans(cbind(db.bahole[, 8], newdf.a[, 11]), na.rm = T)# Ts_350
-    db.bahole[, 9] <- rowMeans(cbind(db.bahole[, 9], newdf.a[, 12]), na.rm = T)# Ts_550
-    db.bahole[, 10] <- rowMeans(cbind(db.bahole[, 10], newdf.a[, 13]), na.rm = T)# Ts_750
-    db.bahole[, 11] <- rowMeans(cbind(db.bahole[, 11], newdf.a[, 14]), na.rm = T)# Ts_900
-    db.bahole[, 12] <- rowMeans(cbind(db.bahole[, 12], newdf.a[, 4]), na.rm = T)# HK-Bat_V
+    db.bahole[, 7] <- rowMeans(cbind(db.bahole[, 7], newdf.a[, 10]), na.rm = T)# Ts_200
+    db.bahole[, 8] <- rowMeans(cbind(db.bahole[, 8], newdf.a[, 11]), na.rm = T)# Ts_250
+    db.bahole[, 9] <- rowMeans(cbind(db.bahole[, 9], newdf.a[, 12]), na.rm = T)# Ts_350
+    db.bahole[, 10] <- rowMeans(cbind(db.bahole[, 10], newdf.a[, 13]), na.rm = T)# Ts_550
+    db.bahole[, 11] <- rowMeans(cbind(db.bahole[, 11], newdf.a[, 14]), na.rm = T)# Ts_750
+    db.bahole[, 12] <- rowMeans(cbind(db.bahole[, 12], newdf.a[, 15]), na.rm = T)# Ts_900
+    db.bahole[, 13] <- rowMeans(cbind(db.bahole[, 13], newdf.a[, 4]), na.rm = T)# HK-Bat_V
   }
-  colnames(db.bahole) <- c("UTC", "Tpan", "Ts_0", "Ts_50", "Ts_100",  "Ts_150", "Ts_250", "Ts_350", "Ts_550", "Ts_750", "Ts_900", "batt_U_min")
+  colnames(db.bahole) <- c("UTC", "Tpan", "Ts_0", "Ts_50", "Ts_100",  "Ts_150", "Ts_200", "Ts_250", "Ts_350", "Ts_550", "Ts_750", "Ts_900", "batt_U_min")
   db.bahole[, 1] <- format(as.POSIXct(seq(start.date, end.date, by = "hour"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
   ## NA problem
