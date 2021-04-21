@@ -137,17 +137,17 @@ for (year in run.year) {
     #############################################################################
     if (("TRUE" %in% duplicated(dada)) == TRUE) { # check for fully double entries
       doouble <- duplicated(dada)
-      cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
-                "first entry:", dada[which(doouble == "TRUE")[1], 1], "\n  last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
+      # cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
+      #           "first entry:", dada[which(doouble == "TRUE")[1], 1], "\n  last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dada <- unique(dada)  # remove double entries
     } else if (("TRUE" %in% duplicated(dada[, 1])) == TRUE) {  # check for multiple different data records for same! timestamp
       doouble <- duplicated(dada[, 1])
-      cat(paste(length(which(doouble == "TRUE")),"multiple records found in file", files2read[i], "\n",
-                "first entry:", dada[which(doouble == "TRUE")[1], 1], "\n  last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
+      # cat(paste(length(which(doouble == "TRUE")),"multiple records found in file", files2read[i], "\n",
+      #           "first entry:", dada[which(doouble == "TRUE")[1], 1], "\n  last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dd <- which(dada[, 1] %in% dada[which(doouble == "TRUE"), 1])
       dada <- dada[-dd, ]  # remove double entries
     } else {
-      cat("No double data entries found in", files2read[i], "\n\n")
+      # cat("No double data entries found in", files2read[i], "\n\n")
     }
 
     #############################################################################
