@@ -70,6 +70,7 @@ for (year_i in run.year){
     write.table(lv0.dayly,
                 paste0(p.1$w[p.1$n == "LV0.p"], station, "/01_O2A/", year_i, "/", yesterday, "_", station, "_lv0.dat"), quote = F, dec = ".", sep = ";", row.names = F)
   }
+  cat("#\n# Lv0 to O2A for ",station, year_i, " updated ",dayshift_i," files\n#\n")
 }
 
 
