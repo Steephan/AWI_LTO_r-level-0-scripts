@@ -17,7 +17,7 @@
 ## 2021-04-15 SL create skript and add BaSoil2009
 ##
 #############################################################################
-# to run this script separately, you have to uncomment the next 10 lines!
+#to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
@@ -34,13 +34,13 @@
 # to run this script separately, you have to uncomment the next 3 lines and choose station, years and run.year
 # origin <- "1970-01-01"
 # recent.year <- as.numeric(format(Sys.Date(),"%Y"))
-# station <- 'BaMet2009'
+# station <- 'BaSoil2009'
 # run.year <- 2021
-# day.shift <- 9
+# day.shift <- 119
 ##############################################################################
 
 
-stations <- c('BaSoil2009', 'BaMet2009','BaHole2021')
+stations <- c('BaSoil2009', 'BaMet2009','BaHole2021','BaSnow2019')
 
 list.years <- list(2009:recent.year, 2009:recent.year, 2021:recent.year)
 
