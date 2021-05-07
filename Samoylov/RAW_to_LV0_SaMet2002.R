@@ -8,6 +8,7 @@
 ##   modified: 2018-10-08
 ##
 ##   changes:
+##   2021-05-06 SL adapted to refresh app
 ##   2021-04-27 SL comments german to english translation, new pathes
 ##   2020-03-09: NetRad replaced with RadNet
 ##   2018-10-08: correction of: 2002-2009 warong correction of NetRad,  wrong read in of CG1 (LwIn instead of LwOut) and CG1Temp was set as PanelTemp!
@@ -37,18 +38,18 @@
 ##
 ###...........................................................................
 # to run this script separately,  you have to uncomment the next 10 lines!
-rm(list = ls())
-if (.Platform$OS.type == "windows") {
-  p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
-  p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-  
-  source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
-} else {
-  p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-  p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-  
-  source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
-}
+# rm(list = ls())
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# } else {
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# }
 ###...........................................................................
 ## step 1.02 set running options years ----
 ##
@@ -56,7 +57,7 @@ if (.Platform$OS.type == "windows") {
 options(scipen = 100) # for non-exponential display of numeric values
 origin <- "1970-01-01"
 aktuell <- as.numeric(format(Sys.Date(), "%Y"))
-
+# runyear <- 2018
 prec.fac.1 <- 0.2 # before  2010           --- ARG100 Tipping Bucket Raingauge
 prec.fac.2 <- 0.1 # since 2010/07/26 01:30 --- Young Raingauge 52203 - SN TB07216
 
@@ -64,14 +65,14 @@ prec.fac.2 <- 0.1 # since 2010/07/26 01:30 --- Young Raingauge 52203 - SN TB0721
 ## step 1.03 loop 1 over years ----
 ##
 ###...........................................................................
-for (year in 2019:aktuell) {#2002:aktuell
+for (year in runyear) {#2002:aktuell
   
   ###...........................................................................
   ## step 1.04 set 2 empty tables with length of year ----
   ## 
   ## columns: 2 (date table) and number of input table (storing table)
   ###...........................................................................
-  cat("\nProcessing year", year, "\n ==================== \n\n")
+  ##cat("\nProcessing year", year, "\n ==================== \n\n")
   start.date <- as.POSIXct(paste0(year, "-01-01 00:00:00"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste0(year, "-", 12, "-", 31, " 23:30:00"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   ## create empty data frame with UTC time stamp every 30 min
@@ -158,7 +159,7 @@ for (year in 2019:aktuell) {#2002:aktuell
     ## 
     ## set temporal colnames;
     ###...........................................................................
-    # cat("\nprocessing ", files.01[i], "\n ======== =", year, " ========== =\n\n")
+    # #cat("\nprocessing ", files.01[i], "\n ======== =", year, " ========== =\n\n")
     if (year < 2007) { # 06_SAK_2002-2009
       dada.meteo <- read.table(paste0(inz.01.path, files.01[i]), sep = ",", dec = ".", header = F, skip = 0, fill = TRUE, na = "NAN")
       colnames(dada.meteo) <- paste0("V", seq_len(ncol(dada.meteo)))
@@ -247,7 +248,7 @@ for (year in 2019:aktuell) {#2002:aktuell
     spalten.met <- length(dada.meteo[1, ])
     
     if (spalten.met == 27) {# 2010-2013
-      cat("zick 27", year, files.01[i], "\n")
+      #cat("zick 27", year, files.01[i], "\n")
       colnames(dada.meteo) <- c("UTC", "rec", "batt_U_min", "Tair_a_50", "Tair_a_200", ###### im jahr 2013 scheint noch ein wechsel zu sein ## PSc: reihenfolge Tair und RH richtig
                                 "RH_200", "RH_50",
                                 "wind_v_300", "wind_deg_300", "wind_sddeg_300",
@@ -293,7 +294,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       
       
     } else if (spalten.met == 30) {# 2013-2014
-      cat("zack 30", year, files.01[i],  "\n")
+      #cat("zack 30", year, files.01[i],  "\n")
       colnames(dada.meteo) <- c("UTC", "rec", "batt_U_min", "Tpan", "Tair_a_50", "Tair_a_200", "Tair_b_50", "Tair_b_200",  ### PSc: here was a error in read in: Tair and RH not in right way
                                 "RH_50", "RH_200", "wind_v_300", "wind_deg_300", "wind_sddeg_300",
                                 "prec_tot_count",
@@ -333,7 +334,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       
       
     } else if (spalten.met == 15 & year >= 2014) {# 2014-2017
-      cat("zock 15", year, files.01[i], "\n")
+      #cat("zock 15", year, files.01[i], "\n")
       
       colnames(dada.meteo) <- c("UTC", "rec", "batt_U_min", "Tpan", "Tair_a_50", "Tair_a_200", "Tair_b_50", "Tair_b_200",  ### PSc: here was a error in read in: Tair and RH not in right way
                                 "RH_50", "RH_200", "wind_v_300", "wind_deg_300", "wind_sddeg_300",
@@ -364,7 +365,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       ###...........................................................................
       
     } else if (spalten.met == 15 & year <= 2009) {# 2002-2009
-      cat("zock 15", year, files.01[i], "\n")
+      #cat("zock 15", year, files.01[i], "\n")
       colnames(dada.meteo) <- c("UTC", "Tair_a_50", "RH_50", "Tair_a_200", "RH_200", # evtl. anders herum --> PSc: NEIN,  Tair_50 IMMER vor 200 bis 2009
                                 "RadNet", "LwOut_raw", "Tsen_cnr4_C", "prec",   #Pete: geaendert "Tpan"-->"Tsen_cnr4_C" @ Stephan
                                 "wind_v_300", "wind_deg_300", "wind_sddeg_300",
@@ -416,7 +417,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       ###...........................................................................
       
     } else if (spalten.met == 17 & year %in% c(2011, 2012, 2013)) {#
-      cat("zock 17", year, files.01[i], "\n")
+      #cat("zock 17", year, files.01[i], "\n")
       colnames(dada.meteo) <- c("UTC", "rec", "batt_U", "Tair_a_200", "RH_200",
                                 "wind_v_300", "wind_deg_300",
                                 "prec_tot_count",
@@ -465,7 +466,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       ###...........................................................................
       
     } else if (spalten.met == 17 & year >= 2015) {# since 2016
-      cat("zock 17", year, files.01[i],  "\n")
+      #cat("zock 17", year, files.01[i],  "\n")
       colnames(dada.meteo) <- c("UTC", "rec", "batt_U_min", "Tpan", "Tair_a_50", "Tair_a_200", "Tair_b_50", "Tair_b_200",
                                 "RH_50", "RH_200", "wind_v_300", "wind_deg_300", "wind_sddeg_300",  ### PSc: here was a error in read in: Tair and RH not in right way
                                 "wind_vmax_300", "wind_vmin_300", "prec_tot_count", "PA_mbar")
@@ -499,7 +500,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       ###...........................................................................
       
     } else if (spalten.met == 17 & year %in% c(2009, 2010)) {# 2009-2010
-      cat("zock 17", year, files.01[i], "\n")
+      #cat("zock 17", year, files.01[i], "\n")
       colnames(dada.meteo) <- c("UTC", "rec", "batt_U", "Tair_a_200", "RH_200",
                                 "wind_v_300", "wind_deg_300", #"wind_sddeg_300",
                                 "prec_tot_count",
@@ -560,7 +561,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       
     } else if (spalten.met %in% c(18, 19)) {# 2009-2010
       if (spalten.met == 19) {
-        cat("zock 19", year, files.01[i], "\n")
+        #cat("zock 19", year, files.01[i], "\n")
         colnames(dada.meteo) <- c("UTC", "rec", "batt_U", "Tair_a_200", "RH_200",
                                   "wind_v_300_2", "wind_v_300", "wind_deg_300", "wind_sddeg_300", ### ### no windvmax!!! 2 x wind_v_300 evtl. "wind_vmax_300" & "wind_v_300" anders herum?
                                   "prec_tot_count",
@@ -570,7 +571,7 @@ for (year in 2019:aktuell) {#2002:aktuell
         
         
       } else {
-        cat("zock 18", year, files.01[i], "\n")
+        #cat("zock 18", year, files.01[i], "\n")
         colnames(dada.meteo) <- c("UTC", "rec", "batt_U", "Tair_a_200", "RH_200",
                                   "wind_v_300", "wind_deg_300", "wind_sddeg_300",
                                   "prec_tot_count",
@@ -633,7 +634,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       ###...........................................................................
       
     } else if (spalten.met == 12 & year %in% c(2007, 2008, 2009, 2010)) {# 2007-2010
-      cat("zock 12", year, files.01[i], "\n")
+      #cat("zock 12", year, files.01[i], "\n")
       colnames(dada.meteo) <- c("UTC", "Ts_1", "Ts_6", "Ts_3", "WT_raw",
                                 "vwc_WT", "Vm_1_Avg", "Vm_2_Avg", "R_1_Avg", "R_2_Avg", # not used
                                 "Tair_a_50", "RH_50")
@@ -695,7 +696,7 @@ for (year in 2019:aktuell) {#2002:aktuell
       ###...........................................................................
       
     } else { # 2014
-      cat("----", spalten.met, year, files.01[i], "\n")
+      #cat("----", spalten.met, year, files.01[i], "\n")
       colnames(dada.meteo)    <- c("UTC", "batt_U_min", "Tpan", "Tair_a_50", "Tair_a_200", "Tair_b_50", "Tair_b_200",
                                    "RH_50", "RH_200", "wind_v_300", "wind_deg_300", "wind_sddeg_300", ### PSc: here was a error in read in: Tair and RH not in right way
                                    "wind_vmax_300", "wind_vmin_300", "prec_tot_count", "PA_mbar")
@@ -837,7 +838,7 @@ for (year in 2019:aktuell) {#2002:aktuell
   write.table(db.samet.rad, paste0(p.1$w[p.1$n == "LV0.p"], "SaMet2002/02_radiation/SaMet2002_Rad_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
   write.table(db.samet.soil, paste0(p.1$w[p.1$n == "LV0.p"], "SaMet2002/03_soil/SaMet2002_Soil_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
   #
-  cat("\n#\n# SaMet2002 ", year, " without problems!\n#\n") # main output
+  #cat("\n#\n# SaMet2002 ", year, " without problems!\n#\n") # main output
   
 } # end loop over years
 

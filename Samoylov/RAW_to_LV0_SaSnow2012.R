@@ -1,56 +1,55 @@
-#############################################################################
-##
-## SaSnow2012  RAW to Level0
+###............................................................................
+## SaSnow2012  RAW to Level0 ----
 ##
 ## equal time steps, no gaps, table flag
 ##
 ## by: Stephan.Lange@awi.de & Niko.Bornemann@awi.de
 ## last modified: 2021-03-25
 ##
-#############################################################################
-#
-# last modifications:
-#
-# 2021-03-25 SL git path and temperature correction
-# 2021-02-11 Sl out source of Dsn correction to file SaSnow2012_DSN_correction.dat
-# 2020-09-09 CL after discussion with Niko "Dist_centre" and "Dist_crack" added
-#               ==> "Dsn_centre" and "Dsn_crack" would be wrong because the sensors measure only the horizontal distance.
-#               Please note, that the first letter has to be a capital letter because column names with the pattern "dist"
-#               are filtered out in script LV0_to_LV1_SaAll.R
-#
-# DSN correction
-#
-# year.is 2018 & 2019 with wrong dsn correction!!!!!!!!
-#
-#############################################################################
+###............................................................................
+##
+## last modifications:
+## 2021-05-06 SL adapted to refresh app
+## 2021-03-25 SL git path and temperature correction
+## 2021-02-11 Sl out source of Dsn correction to file SaSnow2012_DSN_correction.dat
+## 2020-09-09 CL after discussion with Niko "Dist_centre" and "Dist_crack" added
+##               ==> "Dsn_centre" and "Dsn_crack" would be wrong because the sensors measure only the horizontal distance.
+##               Please note, that the first letter has to be a capital letter because column names with the pattern "dist"
+##               are filtered out in script LV0_to_LV1_SaAll.R
+##
+## DSN correction
+##
+## year.is 2018 & 2019 with wrong dsn correction!!!!!!!!
+##
+###............................................................................
 
-#############################################################################
-# to run this script separately, you have to uncomment the next 10 lines!
-rm(list = ls())
-if (.Platform$OS.type == "windows") {
-  p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
-  p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-
-  source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
-} else {
-  p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-  p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-
-  source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
-}
-#############################################################################
+### path definitions ----
+## to run this script separately, you have to uncomment the next 10 lines!
+# rm(list = ls())
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+# 
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# } else {
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+# 
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# }
+###............................................................................
 
 
 options(scipen = 100) # for non-exponential display of numeric values
 
 origin <- "1970-01-01"
-
+# run.year <- 2021
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
+### loop over years ----
+for (year.i in as.numeric(run.year)) {# 2012:recent.year
 
-for (year.i in 2019) {# 2012:recent.year
-
-  cat("\nProcessing year", year.i, "\n ==================== \n\n")
+  #cat("\nProcessing year", year.i, "\n ==================== \n\n")
   start.date <- as.POSIXct(paste(year.i, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste(year.i, "-", 12, "-", 31, " 23:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
 
@@ -64,30 +63,30 @@ for (year.i in 2019) {# 2012:recent.year
   
 
   inz.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSnow2012/01_SnowStation/")
-  #cat("\nnow in ", folders[paz], "\n ==================== \n\n")
+  ##cat("\nnow in ", folders[paz], "\n ==================== \n\n")
   files2read <- list.files(inz.path, pattern = "*.dat")
 
   for (i in 1:length(files2read)) {#1:length(files2read)
 
-    cat("\nprocessing ", files2read[i], "\n ==================== \n\n")
+    #cat("\nprocessing ", files2read[i], "\n ==================== \n\n")
     dada <- read.table(paste(inz.path, files2read[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
     colnames(dada) = paste0("V", seq_len(ncol(dada)))
     # skip file if wrong year.i
     if (as.numeric(substr(lapply(dada[1, 1], as.character), 1, 4)) > year.i || as.numeric(substr(lapply(dada[length(dada[, 1]), 1], as.character), 1, 4)) < year.i) {next}
-   # cat(paste(dada[1, 1], " to ", dada[length(dada[, 1]), 1], " ", files2read[i]))
+   # #cat(paste(dada[1, 1], " to ", dada[length(dada[, 1]), 1], " ", files2read[i]))
 
     # check and remove double entries
     # check for fully double entries
     if (("TRUE" %in% duplicated(dada)) == TRUE) {
       doouble <- duplicated(dada)
-      #cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
+      ##cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
       #"first entry:", dada[which(doouble == "TRUE")[1], 1], "\n last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dada <- unique(dada) # remove double entries
     } else if (("TRUE" %in% duplicated(dada[, 1])) == TRUE) {
       # check for multiple different data records for same! timestamp
       doouble <- duplicated(dada[, 1])
-      #cat(paste(length(which(doouble == "TRUE")), "multiple records found in file", files2read[i], "\n",
+      ##cat(paste(length(which(doouble == "TRUE")), "multiple records found in file", files2read[i], "\n",
       #"first entry:", dada[which(doouble == "TRUE")[1], 1], "\n last entry:", dada[which(doouble == "TRUE")[length(which(doouble == "TRUE"))], 1], "\n\n"))
       dd <- which(dada[, 1] %in% dada[which(doouble == "TRUE"), 1])
       dada <- dada[-dd, ] # remove double entries
@@ -121,7 +120,7 @@ for (year.i in 2019) {# 2012:recent.year
       dada$S4_ice_Avg <- NA
       dada$S4_water_Avg <- NA
       dada$S4_rho_Avg <- NA
-    } else {
+    } else {# 87
       colnames(dada) <- c("UTC", "RECORD", "BattV_Min", "PTemp_C_Avg", "S2_ice_Avg", "S2_water_Avg", "S2_rho_Avg", "S2_C_highFq_Avg", "S2_C_lowFq_Avg", "S2_Phi_highFq_Avg",
         "S2_Phi_lowFq_Avg", "S3_ice_Avg", "S3_water_Avg", "S3_rho_Avg", "S3_C_highFq_Avg", "S3_C_lowFq_Avg", "S3_Phi_highFq_Avg", "S3_Phi_lowFq_Avg",
         "S4_ice_Avg", "S4_water_Avg", "S4_rho_Avg", "S4_C_highFq_Avg", "S4_C_lowFq_Avg", "S4_Phi_highFq_Avg", "S4_Phi_lowFq_Avg", "ChipTemp_SPA_Max",
@@ -167,9 +166,9 @@ for (year.i in 2019) {# 2012:recent.year
   }
 
   
-  #############################################################################
-  #############################################################################
-  ##
+  ###............................................................................
+  ###............................................................................
+  ## Snowdepth correction ----
   ## read SaMet2002 Airtemperature for Snowdepth correction
   ##
   clima <- read.table(paste0(p.1$w[p.1$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year.i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[, 1:5]
@@ -180,14 +179,14 @@ for (year.i in 2019) {# 2012:recent.year
    }
   ##
   ##
-  #############################################################################
-  #############################################################################
+  ###............................................................................
+  ###............................................................................
   
   db.sasnow[, 1] <- format( as.POSIXct(db.sasnow[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
   
-  #############################
-  ### special calculation of snowdepth
+  ###............................................................................
+  ## special calculation of snowdepth ----
   # ==> offset correction
   #
   
@@ -207,7 +206,7 @@ for (year.i in 2019) {# 2012:recent.year
     }
    
 
-  # new names
+  ## new names ----
   colnames(db.sasnow) <- c("UTC", "Ubat", "Tpan_CR1000", "Tpan_SPA",
 
   "ice_2", "ice_3", "ice_4", "water_2", "water_3", "water_4", "rho_2", "rho_3", "rho_4",
@@ -226,11 +225,9 @@ for (year.i in 2019) {# 2012:recent.year
   write.table(db.sasnow[as.numeric(format(as.POSIXct(db.sasnow[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year.i, -2],
               paste0(p.1$w[p.1$n == "LV0.p"], "SaSnow2012/00_full_dataset/SaSnow2012_", year.i, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
 
-  cat("\n#\n# ", year.i, " - SaSnow2012 without problems!\n#\n")
+  cat("\n#\n# level 0  SaSnow2012 : ", year.i, " without problems!\n#\n")
 
 } # end loop over year.is
-# > plot(db.sasnow[,28])
-# > plot(db.sasnow[,28+12])
-# > plot(db.sasnow[,90])
+
 
 

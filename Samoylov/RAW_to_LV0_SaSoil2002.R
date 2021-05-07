@@ -6,6 +6,7 @@
 ##
 ##   by: Stephan.Lange@awi.de, Niko.Bornemann@awi.de, Peter.Schreiber@awi.de
 ##   last modified:
+##   2021-05-06 SL adapted to refresh app
 ##   2021-03-25 SL git path 
 ##   2020-10-30 CL adapted to script guidelines and implementation in Samoylov_MAIN.R
 ##   2019-05-22 PSc (changed file paths)
@@ -14,7 +15,7 @@
 ##
 ###............................................................................
 ##
-##   - remove voltage to lvl0
+##   
 ##   - reorder all columns surface downwards
 ##   - create full dataset for next lvl
 ##   - calculate E2 with extra calib-offset
@@ -30,39 +31,39 @@
 ## 
 ###............................................................................
 #  to run this script separately, you have to uncomment the next 10 lines!
-rm(list = ls())
-if (.Platform$OS.type == "windows") {
-  p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
-  p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-  
-  source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
-} else {
-  p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-  p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-  
-  source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
-}
+# rm(list = ls())
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# } else {
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# }
 ###............................................................................
 ## step 0.02 set running options years, ... ----
 ## 
 ###............................................................................
-# to run this script separately, you have to set run.year:
+# to run this script separately, you have to set runyear:
 #
-origin <- "1970-01-01"
-recent.year <- as.numeric(format(Sys.Date(), "%Y"))
-run.year <- 2018
+# origin <- "1970-01-01"
+# recent.year <- as.numeric(format(Sys.Date(), "%Y"))
+# runyear <- 2018
 
 ###............................................................................
 ## step 0.03 loop 1 over years ----
 ##
 ###............................................................................
-for (year_i in run.year) {
+for (year_i in runyear) {
   ###............................................................................
   ## step 0.04 set 2 empty tables with length of year_i ----
   ##
   ## columns: 2 (date table) and number of input table (storing table)
   ###............................................................................
-  cat("\nProcessing year", year_i, "\n====================\n\n")
+  # cat("\nProcessing year", year_i, "\n====================\n\n")
   start.date <- as.POSIXct(paste(year_i, "-01-01 00:00:00", sep = ""), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
   end.date <- as.POSIXct(paste(year_i, "-", 12, "-", 31, " 23:00:00", sep = ""), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
   # create empty data frame with UTC time stamp every 30 min
@@ -124,7 +125,7 @@ for (year_i in run.year) {
     ## 
     ## set temporal colnames
     ###............................................................................
-    cat("processing: ", files.01[i], "\n")
+    # cat("processing: ", files.01[i], "\n")
     dada.t <- read.table(paste(inz.01.path, files.01[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
     
     colnames(dada.t) <- paste0("V", seq_len(ncol(dada.t)))
@@ -238,7 +239,7 @@ for (year_i in run.year) {
     ##
     ## set temporal colnames
     ###............................................................................
-    cat("processing: ", files.02[i], "\n")
+    #cat("processing: ", files.02[i], "\n")
     dada.tdr <- read.table(paste(inz.02.path, files.02[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
     
     colnames(dada.tdr) <- paste0("V", seq_len(ncol(dada.tdr)))

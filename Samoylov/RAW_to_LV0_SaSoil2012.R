@@ -1,6 +1,6 @@
-#############################################################################
+###............................................................................
 ##
-##            RAW to Level0
+##            RAW to Level0 -----
 ##   (SaSoil2012)
 ##   equal time steps, no gaps
 ##
@@ -8,35 +8,35 @@
 ##   last modified:
 ##   2020-10-30 CL adapted to script guidelines and implementation in Samoylov_MAIN.R
 ##
-#############################################################################
+###............................................................................
 ##
-## -----
 ##   5 different input data file formats
 ##
 ##   check every inputs headers!!!!
 ##
 ##
 ##
-
-#############################################################################
+###............................................................................
 ## step 1.01
 ## set path settings for different systems linux vs. windoof
-#############################################################################
+###............................................................................
 #  to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
-#   path <- read.table("N:/sparc/LTO/R_database/database_R/settings/sa_path_windoof.txt", sep = "\t", header = T)
-#   maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/sa_maintance.txt", sep = "\t", header = T)
-#   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
-#   path <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
-#   maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
+###............................................................................
 ## step 1.02
 ## set running options years, ...
-#############################################################################
+###............................................................................
 # to run this script separately, you have to set run.year:
 #
 # origin <- "1970-01-01"
@@ -46,17 +46,17 @@
 # set option
 ll <- 4
 
-#############################################################################
+###............................................................................
 ## step 1.03
 ## loop 1 over years
-#############################################################################
-for (year_i in run.year) {
-  #############################################################################
+###............................................................................
+for (year_i in runyear) {
+  ###............................................................................
   ## step 1.04
   ## set 2 empty tables with length of year_i
   ## columns: 2 (date table) and number of input table (storing table)
-  #############################################################################
-  cat("\nProcessing year", year_i, "\n====================\n\n")
+  ###............................................................................
+  ##cat("\nProcessing year", year_i, "\n====================\n\n")
   start.date <- as.POSIXct(paste(year_i, "-01-01 00:00:00", sep = ""), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
   end.date <- as.POSIXct(paste(year_i, "-", 12, "-", 31, " 23:30:00", sep = ""), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
   # create empty data frame with UTC time stamp every 30 min
@@ -92,65 +92,65 @@ for (year_i in run.year) {
   colnames(compl.cold) <- c("UTC", "erste")
   colnames(compl.warm) <- c("UTC", "erste")
   colnames(compl.dyna) <- c("UTC", "erste")
-  #############################################################################
+  ###............................................................................
   ## step 1.05
   ## set input.path and list all files
-  #############################################################################
-  inz.01.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2012/01_Temp/")
+  ###............................................................................
+  inz.01.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/01_Temp/")
   files.01 <- list.files(inz.01.path, pattern = "*.dat")
 
-  inz.02.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2012/02_Data_TDR/")
+  inz.02.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/02_Data_TDR/")
   files.02 <- list.files(inz.02.path, pattern = "*.dat")
 
-  inz.03.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2012/06_Data_Cold/")
+  inz.03.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/06_Data_Cold/")
   files.03 <- list.files(inz.03.path, pattern = "*.dat")
 
-  inz.04.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2012/07_Data_Warm/")
+  inz.04.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/07_Data_Warm/")
   files.04 <- list.files(inz.04.path, pattern = "*.dat")
 
-  inz.05.path <- paste0(path$w[path$n == "RAW.p"], "SaSoil2012/08_Data_Dyna/")
+  inz.05.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/08_Data_Dyna/")
   files.05 <- list.files(inz.05.path, pattern = "*.dat")
-  #############################################################################   main input tasks             main input tasks
-  ## step 1.06a -----
-  ## loop 2 over all temperature files
-  #############################################################################
+  ###............................................................................main input tasks             main input tasks
+  ## step 1.06a loop 2 over all temperature files -----
+  ## 
+  ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.01)) { # soil temperature 1
 
-      #############################################################################
-      ## step 1.07
-      ## read one file (skip headers, set NA-values)
+      ###............................................................................
+      ## step 1.07 read one file (skip headers, set NA-values)  ----
+      ## 
       ## set temporal colnames
-      #############################################################################
-      # cat("\nprocessing ",files.01[i],"\n====================\n\n")
+      ###............................................................................
+      # #cat("\nprocessing ",files.01[i],"\n====================\n\n")
       dada.t <- read.table(paste(inz.01.path, files.01[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
       colnames(dada.t) <- paste0("V", seq_len(ncol(dada.t)))
-      #############################################################################
-      ## step 1.09
+      ###............................................................................
+      ## step 1.09 ----
       ## check file if dates are in running year_i of loop 1
-      #############################################################################
+      ###............................................................................
 
       if (as.numeric(substr(lapply(dada.t[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.t[length(dada.t[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
-      cat(paste(dada.t[1, 1], "     to     ", dada.t[length(dada.t[, 1]), 1], "    ", files.01[i], "\n"))
-      #############################################################################
-      ## step 1.10
+      #cat(paste(dada.t[1, 1], "     to     ", dada.t[length(dada.t[, 1]), 1], "    ", files.01[i], "\n"))
+      ###............................................................................
+      ## step 1.10 ----
       ## check file for double entries
-      #############################################################################
+      ###............................................................................
       if (length(which(duplicated(dada.t[, 1]) == TRUE)) > 0) dada.t <- dada.t[-which(duplicated(dada.t[, 1]) == T), ]
-      #############################################################################
-      ## step 1.11
+      ###............................................................................
+      ## step 1.11 ----
       ## convert date to numeric value
-      #############################################################################
+      ###............................................................................
 
       dada.t[, 1] <- as.numeric(as.POSIXct(dada.t[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
-      #############################################################################
-      ## step 1.12a
+      ###............................................................................
+      ## step 1.12a ----
       ## special case: former files with different columns
       ## set colnames
-      #############################################################################
+      ###............................................................................
       colnames(dada.t) <- c(
         "UTC", "RECORD", "Tpan_CR3000", "Ubat",
         "Ts_rim_1", "Ts_rim_7", "Ts_rim_22", "Ts_rim_38", # 2x8 soil temperatures
@@ -244,56 +244,56 @@ for (year_i in run.year) {
 
       newdf.t <- merge(compl.t, dada.t, all.x = T, by = "UTC")
 
-      #############################################################################
-      ## step 1.15
+      ###............................................................................
+      ## step 1.15 ----
       ## merge date table with storing table
-      #############################################################################
+      ###............................................................................
 
       for (k in 2:(length(db.sasoil.t[1, ]))) {
         db.sasoil.t[, k] <- rowMeans(cbind(db.sasoil.t[, k], newdf.t[, k + 1]), na.rm = T) #
       }
     }
   } # soil temperature
-  #############################################################################   soil temperature
+  ###............................................................................soil temperature
   ## step 1.06b -----
   ## loop 2 over all datatdr files
-  #############################################################################
+  ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.02)) { # soil moisture  1
-      #############################################################################
+      ###............................................................................
       ## step 1.07b
       ## read one file (skip headers, set NA-values)
       ## set temporal colnames
-      #############################################################################
-      # cat("\nprocessing ",files.02[i],"\n====================\n\n")
+      ###............................................................................
+      # #cat("\nprocessing ",files.02[i],"\n====================\n\n")
       dada.tdr <- read.table(paste(inz.02.path, files.02[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
       colnames(dada.tdr) <- paste0("V", seq_len(ncol(dada.tdr)))
-      #############################################################################
-      ## step 1.09b
+      ###............................................................................
+      ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
-      #############################################################################
+      ###............................................................................
 
       if (as.numeric(substr(lapply(dada.tdr[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.tdr[length(dada.tdr[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
-      cat(paste(dada.tdr[1, 1], "     to     ", dada.tdr[length(dada.tdr[, 1]), 1], "    ", files.02[i], "\n"))
-      #############################################################################
-      ## step 1.10b
+      #cat(paste(dada.tdr[1, 1], "     to     ", dada.tdr[length(dada.tdr[, 1]), 1], "    ", files.02[i], "\n"))
+      ###............................................................................
+      ## step 1.10b ----
       ## check file for double entries
-      #############################################################################
+      ###............................................................................
       if (length(which(duplicated(dada.tdr[, 1]) == TRUE)) > 0) dada.tdr <- dada.tdr[-which(duplicated(dada.tdr[, 1]) == T), ]
-      #############################################################################
-      ## step 1.11b
+      ###............................................................................
+      ## step 1.11b ----
       ## convert date to numeric value
-      #############################################################################
+      ###............................................................................
 
       dada.tdr[, 1] <- as.numeric(as.POSIXct(dada.tdr[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## special case: former files with different columns
       ## set colnames
-      #############################################################################
+      ###............................................................................
 
       colnames(dada.tdr) <- c(
         "UTC", "RECORD",
@@ -307,10 +307,10 @@ for (year_i in run.year) {
         "vwc_cen_v_16", "vwc_rim_v_22", "vwc_rim_24", "vwc_rim_38", "vwc_rim_52", "vwc_rim_100"
       )
 
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## add additional columns to former dataset
-      #############################################################################
+      ###............................................................................
       for (i in 3:15) { # convert La/L to dielectricity
         dada.tdr[, i] <- dada.tdr[, i]^2
       }
@@ -331,63 +331,63 @@ for (year_i in run.year) {
         "vwc_rim_v_22", "vwc_rim_9", "vwc_rim_24", "vwc_rim_38", "vwc_rim_52", "vwc_rim_100"
       )]
 
-      #############################################################################
-      ## step 1.14b
+      ###............................................................................
+      ## step 1.14b ----
       ## merge input data with date table
-      #############################################################################
+      ###............................................................................
 
       newdf.tdr <- merge(compl.tdr, dada.tdr, all.x = T, by = "UTC")
 
-      #############################################################################
-      ## step 1.15b
+      ###............................................................................
+      ## step 1.15b ----
       ## merge date table with storing table
-      #############################################################################
+      ###............................................................................
 
       for (k in 2:(length(db.sasoil.tdr[1, ]))) {
         db.sasoil.tdr[, k] <- rowMeans(cbind(db.sasoil.tdr[, k], newdf.tdr[, k + 1]), na.rm = T) #
       }
     }
   } # soil moisture
-  #############################################################################   soil temperature
+  ###............................................................................soil temperature
   ## step 1.06c -----
   ## loop 2 over all datacold files
-  #############################################################################
+  ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.03)) { # datacold
-      #############################################################################
-      ## step 1.07b
+      ###............................................................................
+      ## step 1.07b ----
       ## read one file (skip headers, set NA-values)
       ## set temporal colnames
-      #############################################################################
-      # cat("\nprocessing ",files.03[i],"\n====================\n\n")
+      ###............................................................................
+      # #cat("\nprocessing ",files.03[i],"\n====================\n\n")
       dada.cold <- read.table(paste(inz.03.path, files.03[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
       colnames(dada.cold) <- paste0("V", seq_len(ncol(dada.cold)))
-      #############################################################################
-      ## step 1.09b
+      ###............................................................................
+      ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
-      #############################################################################
+      ###............................................................................
 
       if (as.numeric(substr(lapply(dada.cold[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.cold[length(dada.cold[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
-      cat(paste(dada.cold[1, 1], "     to     ", dada.cold[length(dada.cold[, 1]), 1], "    ", files.03[i], "\n"))
-      #############################################################################
-      ## step 1.10b
+      #cat(paste(dada.cold[1, 1], "     to     ", dada.cold[length(dada.cold[, 1]), 1], "    ", files.03[i], "\n"))
+      ###............................................................................
+      ## step 1.10b ----
       ## check file for double entries
-      #############################################################################
+      ###............................................................................
       if (length(which(duplicated(dada.cold[, 1]) == TRUE)) > 0) dada.cold <- dada.cold[-which(duplicated(dada.cold[, 1]) == T), ]
-      #############################################################################
-      ## step 1.11b
+      ###............................................................................
+      ## step 1.11b ----
       ## convert date to numeric value
-      #############################################################################
+      ###............................................................................
 
       dada.cold[, 1] <- as.numeric(as.POSIXct(dada.cold[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## special case: former files with different columns
       ## set colnames
-      #############################################################################
+      ###............................................................................
       ## ' Sensor output values in cold, stable state in addition also the actual battery
       ## ' voltage is saved.
       ##   DataTable (DataCold,write,-1)
@@ -395,7 +395,7 @@ for (year_i in run.year) {
       ##   Sample (4,U_sen(),FP2)
       ##   Sample (4,U_heat(),FP2)
       ##    EndTable
-      #############################################################################
+      ###............................................................................
       # colnames(dada.cold)<-c("UTC","RECORD",
       #                     "U_sen1","U_sen2","U_sen3","U_sen4",
       #                     "U_heat1","U_heat2","U_heat3","U_heat4")
@@ -405,10 +405,10 @@ for (year_i in run.year) {
         "Usen_h_cen_95", "Usen_h_cen_45", "Usen_h_rim_99", "Usen_h_rim_16"
       )
 
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## add additional columns to former dataset
-      #############################################################################
+      ###............................................................................
       # dada.cold<-dada.cold[,c("UTC",
       #                         "U_sen1","U_sen2","U_sen3","U_sen4",
       #                         "U_heat1","U_heat2","U_heat3","U_heat4")]
@@ -417,64 +417,64 @@ for (year_i in run.year) {
         "Usen_w_cen_45", "Usen_w_cen_95", "Usen_w_rim_16", "Usen_w_rim_99",
         "Usen_h_cen_45", "Usen_h_cen_95", "Usen_h_rim_16", "Usen_h_rim_99"
       )]
-      #############################################################################
-      ## step 1.14b
+      ###............................................................................
+      ## step 1.14b ----
       ## merge input data with date table
-      #############################################################################
+      ###............................................................................
 
       newdf.cold <- merge(compl.cold, dada.cold, all.x = T, by = "UTC")
 
-      #############################################################################
-      ## step 1.15b
+      ###............................................................................
+      ## step 1.15b ----
       ## merge date table with storing table
-      #############################################################################
+      ###............................................................................
 
       for (k in 2:(length(db.sasoil.cold[1, ]))) {
         db.sasoil.cold[, k] <- rowMeans(cbind(db.sasoil.cold[, k], newdf.cold[, k + 1]), na.rm = T) #
       }
     }
   } # datacold
-  #############################################################################   soil temperature
+  ###............................................................................soil temperature
   ## step 1.06d -----
   ## loop 3 over all datawarm files
-  #############################################################################
+  ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.04)) { # soil moisture  1
 
-      #############################################################################
-      ## step 1.07b
+      ###............................................................................
+      ## step 1.07b ----
       ## read one file (skip headers, set NA-values)
       ## set temporal colnames
-      #############################################################################
-      # cat("\nprocessing ",files.04[i],"\n====================\n\n")
+      ###............................................................................
+      # #cat("\nprocessing ",files.04[i],"\n====================\n\n")
       dada.warm <- read.table(paste(inz.04.path, files.04[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
       colnames(dada.warm) <- paste0("V", seq_len(ncol(dada.warm)))
-      #############################################################################
-      ## step 1.09b
+      ###............................................................................
+      ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
-      #############################################################################
+      ###............................................................................
 
       if (as.numeric(substr(lapply(dada.warm[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.warm[length(dada.warm[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
-      cat(paste(dada.warm[1, 1], "     to     ", dada.warm[length(dada.warm[, 1]), 1], "    ", files.04[i], "\n"))
-      #############################################################################
-      ## step 1.10b
+      #cat(paste(dada.warm[1, 1], "     to     ", dada.warm[length(dada.warm[, 1]), 1], "    ", files.04[i], "\n"))
+      ###............................................................................
+      ## step 1.10b ----
       ## check file for double entries
-      #############################################################################
+      ###............................................................................
       if (length(which(duplicated(dada.warm[, 1]) == TRUE)) > 0) dada.warm <- dada.warm[-which(duplicated(dada.warm[, 1]) == T), ]
-      #############################################################################
-      ## step 1.11b
+      ###............................................................................
+      ## step 1.11b ----
       ## convert date to numeric value
-      #############################################################################
+      ###............................................................................
 
       dada.warm[, 1] <- as.numeric(as.POSIXct(dada.warm[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## special case: former files with different columns
       ## set colnames
-      #############################################################################
+      ###............................................................................
       ## 'Sensor output values and computed parameters in warm, stable state
       ##   DataTable (DataWarm,true,-1)
       ##    CardOut (0 ,-1)
@@ -482,7 +482,7 @@ for (year_i in run.year) {
       ##   Sample (4,U_senamp(),FP2)
       ##   Sample (4,condTh(),FP2)
       ##  EndTable
-      #############################################################################
+      ###............................................................................
       # colnames(dada.warm)<-c("UTC","RECORD",
       #                        "U_sen01","U_sen02","U_sen03","U_sen04",
       #                        "U_senamp1","U_senamp2","U_senamp3","U_senamp4",
@@ -494,10 +494,10 @@ for (year_i in run.year) {
         "tcond_cen_95", "tcond_cen_45", "tcond_rim_99", "tcond_rim_16"
       )
 
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## add additional columns to former dataset
-      #############################################################################
+      ###............................................................................
 
 
       # dada.warm<-dada.warm[,c("UTC",#"RECORD",
@@ -511,71 +511,71 @@ for (year_i in run.year) {
         "tcond_cen_45", "tcond_cen_95", "tcond_rim_16", "tcond_rim_99"
       )]
 
-      #############################################################################
-      ## step 1.14b
+      ###............................................................................
+      ## step 1.14b ----
       ## merge input data with date table
-      #############################################################################
+      ###............................................................................
 
       newdf.warm <- merge(compl.warm, dada.warm, all.x = T, by = "UTC")
 
-      #############################################################################
-      ## step 1.15b
+      ###............................................................................
+      ## step 1.15b ----
       ## merge date table with storing table
-      #############################################################################
+      ###............................................................................
 
       for (k in 2:(length(db.sasoil.warm[1, ]))) {
         db.sasoil.warm[, k] <- rowMeans(cbind(db.sasoil.warm[, k], newdf.warm[, k + 1]), na.rm = T) #
       }
     }
   } # datawarm
-  #############################################################################   soil temperature
+  ###............................................................................soil temperature
   ## step 1.06e -----
   ## loop 4 over all datadyna files
-  #############################################################################
+  ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.05)) { # soil moisture
 
-      #############################################################################
-      ## step 1.07b
+      ###............................................................................
+      ## step 1.07b ----
       ## read one file (skip headers, set NA-values)
       ## set temporal colnames
-      #############################################################################
-      # cat("\nprocessing ",files.05[i],"\n====================\n\n")
+      ###............................................................................
+      # #cat("\nprocessing ",files.05[i],"\n====================\n\n")
       dada.dyna <- read.table(paste(inz.05.path, files.05[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
       colnames(dada.dyna) <- paste0("V", seq_len(ncol(dada.dyna)))
-      #############################################################################
-      ## step 1.09b
+      ###............................................................................
+      ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
-      #############################################################################
+      ###............................................................................
 
       if (as.numeric(substr(lapply(dada.dyna[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.dyna[length(dada.dyna[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
-      cat(paste(dada.dyna[1, 1], "     to     ", dada.dyna[length(dada.dyna[, 1]), 1], "    ", files.02[i], "\n"))
-      #############################################################################
-      ## step 1.10b
+      #cat(paste(dada.dyna[1, 1], "     to     ", dada.dyna[length(dada.dyna[, 1]), 1], "    ", files.02[i], "\n"))
+      ###............................................................................
+      ## step 1.10b ----
       ## check file for double entries
-      #############################################################################
+      ###............................................................................
       if (length(which(duplicated(dada.dyna[, 1]) == TRUE)) > 0) dada.dyna <- dada.dyna[-which(duplicated(dada.dyna[, 1]) == T), ]
-      #############################################################################
+      ###............................................................................
       ## step 1.11b
       ## convert date to numeric value
-      #############################################################################
+      ###............................................................................
 
       dada.dyna[, 1] <- as.numeric(as.POSIXct(dada.dyna[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## special case: former files with different columns
       ## set colnames
-      #############################################################################
+      ###............................................................................
       ## 'Save data computed using the found time constant
       ## DataTable (DynaData,true,-1)
       ## CardOut (0 ,-1)
       ## Sample (4,td(),FP2)
       ## Sample (4,VHC(),FP2)
       ## EndTable
-      #############################################################################
+      ###............................................................................
 
       colnames(dada.dyna) <- c(
         "UTC", "RECORD",
@@ -583,10 +583,10 @@ for (year_i in run.year) {
         "Cv_cen_95", "Cv_cen_45", "Cv_rim_99", "Cv_rim_16"
       )
 
-      #############################################################################
-      ## step 1.12b
+      ###............................................................................
+      ## step 1.12b ----
       ## add additional columns to former dataset
-      #############################################################################
+      ###............................................................................
 
 
       dada.dyna <- dada.dyna[, c(
@@ -595,17 +595,17 @@ for (year_i in run.year) {
         "Cv_cen_45", "Cv_cen_95", "Cv_rim_16", "Cv_rim_99"
       )]
 
-      #############################################################################
-      ## step 1.14b
+      ###............................................................................
+      ## step 1.14b ----
       ## merge input data with date table
-      #############################################################################
+      ###............................................................................
 
       newdf.dyna <- merge(compl.dyna, dada.dyna, all.x = T, by = "UTC")
 
-      #############################################################################
-      ## step 1.15b
+      ###............................................................................
+      ## step 1.15b ----
       ## merge date table with storing table
-      #############################################################################
+      ###............................................................................
 
       for (k in 2:ncol(dada.dyna)) {
         db.sasoil.dyna[, k] <- rowMeans(cbind(db.sasoil.dyna[, k], newdf.dyna[, k + 1]), na.rm = T) #
@@ -613,10 +613,10 @@ for (year_i in run.year) {
     }
   } # datadyna
 
-  #############################################################################  soil moisture
+  ###............................................................................ soil moisture
   ## step 1.16 -----
   ## convert numeric dates back to date format
-  #############################################################################
+  ###............................................................................
 
 
   db.sasoil.t[, 1] <- format(as.POSIXct(db.sasoil.t[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
@@ -625,10 +625,10 @@ for (year_i in run.year) {
   db.sasoil.warm[, 1] <- format(as.POSIXct(db.sasoil.warm[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
   db.sasoil.dyna[, 1] <- format(as.POSIXct(db.sasoil.dyna[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
 
-  #############################################################################
-  ## step 1.17
+  ###............................................................................
+  ## step 1.17 ----
   ## set "sparc" colnames
-  #############################################################################
+  ###............................................................................
   #
   colnames(db.sasoil.t) <- c(
     "UTC", "Tpan_CR3000", "Ubat",
@@ -690,10 +690,10 @@ for (year_i in run.year) {
     "Cv_cen_45", "Cv_cen_95", "Cv_rim_16", "Cv_rim_99"
   )
 
-  ###################################################
-  ###################################################
+  ###............................................................................
+  ###............................................................................
   ##
-  ##  calculation of snow height and WT
+  ##  calculation of snow height and WT ----
   ##
   if (year_i == 2018) { # unfrozen 5.5.18 - 9.8.18
     # aa1<-which(db.sasoil.t[,1]=="2015-05-05 01:30")
@@ -777,7 +777,7 @@ for (year_i in run.year) {
     db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
     db.sasoil.tdr$WT_cen_2[aa1:(aa2 - 1)] <- 0.958 - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48])
   } else {
-    cat("wrong year")
+    #cat("wrong year")
   }
 
 
@@ -800,36 +800,36 @@ for (year_i in run.year) {
     db.sasoil.dyna[is.nan(as.numeric(db.sasoil.dyna[, m5])), m5] <- NA
   }
 
-  #############################################################################
-  ## step 1.18
-  ## safe data to txt-file
-  #############################################################################
+  ###............................................................................
+  ## step 1.18 safe data to txt-file ----
+  ## 
+  ###............................................................................
   #
   total <- cbind(db.sasoil.t, db.sasoil.tdr[, -1], db.sasoil.cold[, -1], db.sasoil.warm[, -1], db.sasoil.dyna[, -1])
 
   write.table(total,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2012/00_full_dataset/SaSoil2012_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/00_full_dataset/SaSoil2012_", year_i, "_lv0.dat"),
     quote = F, dec = ".", sep = ",", row.names = F
   )
 
   write.table(db.sasoil.t,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2012/01_soiltemperature/SaSoil2012_ts_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/01_soiltemperature/SaSoil2012_ts_", year_i, "_lv0.dat"),
     quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.tdr,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2012/02_Data_TDR/SaSoil2012_tdr_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/02_Data_TDR/SaSoil2012_tdr_", year_i, "_lv0.dat"),
     quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.cold,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2012/06_Data_Cold/SaSoil2012_cold_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/06_Data_Cold/SaSoil2012_cold_", year_i, "_lv0.dat"),
     quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.warm,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2012/07_Data_Warm/SaSoil2012_warm_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/07_Data_Warm/SaSoil2012_warm_", year_i, "_lv0.dat"),
     quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.dyna,
-    paste0(path$w[path$n == "LV0.p"], "SaSoil2012/08_Data_Dyna/SaSoil2012_dyna_", year_i, "_lv0.dat"),
+    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/08_Data_Dyna/SaSoil2012_dyna_", year_i, "_lv0.dat"),
     quote = F, dec = ".", sep = ",", row.names = F
   )
 
