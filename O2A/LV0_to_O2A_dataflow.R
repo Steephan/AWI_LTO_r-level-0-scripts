@@ -1,22 +1,24 @@
-#############################################################################
+###..............................................................................
 ##
-##   Level0 to O2A
+##   Level0 to O2A -----
 ##
 ##   daily raw files
 ##
 ##   by:  stephan.lange@awi.de
 ##
 ##
-###############################################################################
+###..............................................................................
 #
 #
-#############################################################################
+###..............................................................................
 ##
 ## last modification:
+## 2021-05-07 SL add BaSnow2013 & 2019, SaMet2002, SaSnow2012, SaSoil2002 & 2012
 ## 2021-04-20 SL add Bamet2009 and BaHole2021
 ## 2021-04-15 SL create skript and add BaSoil2009
 ##
-#############################################################################
+###..............................................................................
+## path definitions -----
 #to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -30,19 +32,26 @@
 # 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-# ############################################################################
+###..............................................................................
+## extra inputs --------
 # to run this script separately, you have to uncomment the next 3 lines and choose station, years and run.year
 # origin <- "1970-01-01"
 # recent.year <- as.numeric(format(Sys.Date(),"%Y"))
-# station <- 'BaSoil2009'
+# station <- 'BaSnow2013'
 # run.year <- 2021
-# day.shift <- 119
-##############################################################################
+# day.shift <- 140
+###..............................................................................
 
 
-stations <- c('BaSoil2009', 'BaMet2009','BaHole2021','BaSnow2019')
+stations <- c('BaSoil2009', 'BaMet2009','BaHole2021',
+              'BaSnow2013','BaSnow2019cs','BaSnow2019sr',
+              'SaMet2002','SaSnow2012',
+              'SaSoil2002','SaSoil2012')
 
-list.years <- list(2009:recent.year, 2009:recent.year, 2021:recent.year)
+list.years <- list(2009:recent.year, 2009:recent.year, 2021:recent.year,
+                   2013:recent.year, 2019:recent.year, 2019:recent.year,
+                   2002:recent.year, 2012:recent.year,
+                   2002:recent.year, 2012:recent.year)
 
 years <- list.years[[which(stations == station)]]
 
@@ -51,7 +60,7 @@ file.name.O2A <- paste0(p.1$w[p.1$n == "settings.p"],  "O2A_name.files/O2A_names
 O2A.names     <- read.table(file.name.O2A, sep = ";", dec = ".", header = T)
 
 for (year_i in run.year){
-  
+  #if(year_i == as.numeric(format(Sys.Date(),"%Y"))){}
   file.name.main <- paste0(p.1$w[p.1$n == "LV0.p"], station, "/00_full_dataset/", station,"_", year_i, "_lv0.dat")
   lv0.data <- read.table(file.name.main, sep = ",", dec = ".", header = T)
   # set time format
