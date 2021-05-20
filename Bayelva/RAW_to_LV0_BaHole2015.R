@@ -1,18 +1,19 @@
-#############################################################################
+###.........................................................................
 ##
-##   RAW to Level0
+##   RAW to Level0  ----
 ##
 ##   equal time steps, no gaps, (table flag, not implemented)
 ##
 ##   by: stephan.lange@awi.de
 ##   last modified: 2020-04-14
 ##
-#############################################################################
+###.........................................................................
 ##
-## last modifications:
+## last modifications: ----
+##  2021-05-12 SL adapted to runnerapp and content management
 ##  2020-10-09 CL origin <- "01-01-1970" removed because it is not used and might create confusion with other scripts in the sequence of Bayelva_MAIN.R
 ##  2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
-#############################################################################
+###.........................................................................
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -26,17 +27,17 @@
 # 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
+###.........................................................................
 
 
-########
+###.........................................................................
 # to run this script separately, you have to set run.year:
 #
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 # run.year <- recent.year
 # run.year <- 2021
-#######
-
+###.........................................................................
+## loop over years  ----
 for (year in run.year) {
 
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -189,11 +190,11 @@ for (year in run.year) {
 
 
 
-#     #############################################################################################################
+###.........................................................................
 #     ##
-#     ##  next part was a combination of Bahole2009
+#     ##  next part was a combination of Bahole2009 ----
 #     ##
-#     #############################################################################################################
+###.........................................................................
 
 # if(year> = 2016) {
 #   old.style  <- dir(paste0(p.1$w[p.1$n == "RAW.p"], "/BaHole2015"), pattern = glob2rx("*.txt"))
@@ -230,13 +231,13 @@ for (year in run.year) {
 # if(year == 2016 & length(files.temp)>0) {# import the online files
 #   for (lola in (1:length(files.temp))) {
 #     db <- dbConnect(SQLite(), dbname = paste0(paste0(p.1$w[p.1$n == "BaHo.onl.p"], "/realtime_rsk/"), files.temp[lola]))
-#     #############################################################################################################
+###.........................................................................
 #     ##
-#     ##  difference to raw-files in name as date
+#     ##  difference to raw-files in name as date ----
 #     ##
 #     ##  starting time is in the name!!!!!!
 #     ##
-#     #############################################################################################################
+###.........................................................................
 #       start.tach <- as.numeric(substr(as.character(files.temp[lola]), 7, 14))
 #       start.zeit <- as.numeric(substr(as.character(files.temp[lola]), 16, 17))+1
 #

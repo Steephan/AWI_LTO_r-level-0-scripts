@@ -1,11 +1,11 @@
-#############################################################################
+###.........................................................................
 ##
-##   BaSoil2017         RAW to Level0
+##   BaSoil2017         RAW to Level0 ----
 ##
-#######################
-## ATTENTION! File name of raw data is BaSoil1998 xxxx  == > step 1.05.
+###.........................................................................
+## ATTENTION! File name of raw data is BaSoil1998 xxxx  == > step 1.05. ----
 ## But new file name is BaSoil2017, because only the heatflux measurements are used and heatflux measurements started in 2017.
-#######################
+###.........................................................................
 ##
 ##   equal time steps, no gaps
 ##
@@ -13,23 +13,24 @@
 ##		   christian.lehr@awi.de
 ##   last modified: 2020-04-14
 ##
-#############################################################################
+###.........................................................................
 ##
-##    modifications:
+##    modifications: ----
+##    2021-05-12 SL adapted to runner app and content management
 ##    2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
 ##    2020-03-25 CL change of variable names
 ##
-#############################################################################
+###.........................................................................
 ##
 ##
 ##   19 steps to get wonderful data
 ##
 ##
 ##
-#############################################################################
-## step 1.01
-## set path settings for different systems linux vs. windows
-#############################################################################
+###.........................................................................
+## step 1.01 set path settings for different systems linux vs. windows ----
+##
+###.........................................................................
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -43,41 +44,42 @@
 # 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
-## step 1.02
-## set options
-#############################################################################
+###.........................................................................
+## step 1.02 set options ----
+##
+###.........................................................................
 
-##### for non-exponential display of numeric values
+###.........................................................................
+# for non-exponential display of numeric values
 # options(scipen = 100)
 # origin <- "1970-01-01"
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
-########
+###.........................................................................
 # to run this script separately, you have to set run.year:
 #
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 # run.year <- recent.year
 # run.year <- 2020
-#######
+###.........................................................................
 
-#############################################################################
-## step 1.03
-## loop 1 over years
-#############################################################################
+###.........................................................................
+## step 1.03 loop 1 over years ----
+##
+###.........................................................................
 
 for (year in run.year) {
 
-  #############################################################################
-  ## step 1.04
-  ## define empty table for the processed year
+  ###.........................................................................
+  ## step 1.04 define empty table for the processed year ----
+  ##
   ## storing table: storing.table with date column + columns for all the variables of the desired end product
   ##
   ##
   ## define two empty tables for the processed year
   ## date table: date.table with date column + one dummy column
   ## storing table: storing.table with date column + columns for all the variables of the desired end product
-  #############################################################################
+  ###.........................................................................
 
   # cat("\nProcessing year", year, "\n====================\n\n")
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -97,26 +99,26 @@ for (year in run.year) {
   storing.table[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = '%Y-%m-%d %H:%M:%S'))
   colnames(storing.table) <- c("UTC", "V1", "V2")
 
-  #############################################################################
-  ## step 1.05
-  ## set input path and list all files
-  #############################################################################
+  ###.........................................................................
+  ## step 1.05 set input path and list all files ----
+  ##
+  ###.........................................................................
 
   input.path <- paste0(p.1$w[p.1$n == "ONL.p"], "BaSoil1998/")
   files2read <- list.files(input.path, pattern = "*.dat")
 
-  #############################################################################
-  ## step 1.06
-  ## loop 2 over all files
-  #############################################################################
+  ###.........................................................................
+  ## step 1.06 loop 2 over all files ----
+  ##
+  ###.........................................................................
 
   for (i in 1:length(files2read)) {
 
-    #############################################################################
-    ## step 1.07
-    ## read one file (skip headers, set NA-values)
+    ###.........................................................................
+    ## step 1.07 read one file (skip headers, set NA-values) ----
+    ##
     ## set temporal column names
-    #############################################################################
+    ###.........................................................................
 
     #cat("\nprocessing ", files2read[i], "\n ==================== \n\n")
     file.i <- read.table(paste(input.path, files2read[i], sep = ""),
@@ -124,10 +126,10 @@ for (year in run.year) {
 
     colnames(file.i) <- paste0("V", seq_len(ncol(file.i)))
 
-    #############################################################################
-    ## step 1.09
-    ## check file if dates are in running year of loop 1
-    #############################################################################
+    ###.........................................................................
+    ## step 1.09 check file if dates are in running year of loop 1 ----
+    ##
+    ###.........................................................................
 
     # skip file if wrong year
     if (as.numeric(substr(lapply(file.i[1, 1], as.character), 1, 4)) > year || as.numeric(substr(lapply(file.i[length(file.i[, 1]), 1], as.character), 1, 4)) < year) {
@@ -135,10 +137,10 @@ for (year in run.year) {
     }
     #cat(paste(file.i[1, 1], " to ", file.i[length(file.i[, 1]), 1], " ", files2read[i]))
 
-    #############################################################################
-    ## step 1.10
-    ## check file for duplicated records
-    #############################################################################
+    ###.........................................................................
+    ## step 1.10 check file for duplicated records ----
+    ##
+    ###.........................................................................
 
     # Case 1: check for records with same date AND same data
     # Case 2: check for multiple different data records with the same timestamp
@@ -160,16 +162,16 @@ for (year in run.year) {
       # cat("No duplicated records found in", files2read[i], "\n\n")
     }
 
-    #############################################################################
-    ## step 1.11
-    ## convert date to numeric value
-    #############################################################################
+    ###.........................................................................
+    ## step 1.11 convert date to numeric value ----
+    ##
+    ###.........................................................................
 
     file.i[, 1] <- as.numeric(as.POSIXct(file.i[, 1], format = '%Y-%m-%d %H:%M:%S', origin = origin, tz = "UTC"))
 
-    #############################################################################
-    ## step 1.12
-    ## Naming of the columns
+    ###.........................................................................
+    ## step 1.12 Naming of the columns ----
+    ##
     ## ==> this has to be set manually, because experience shows that
     ## a) there are often special cases, and
     ## b) that it is good to manually define which variables are actually selected and processed
@@ -179,7 +181,7 @@ for (year in run.year) {
     ## Case 2:
     ## special case: former files with different columns ==> add additional columns
     ## here: no special cases....
-    #############################################################################
+    ###.........................................................................
 
     if (length(file.i[1, ]) == 38) {
       colnames(file.i) <-   c("UTC", "RECORD", "batt_volt_Min", "PTemp", "T107_C_Avg(1)", "T107_C_Avg(2)",
@@ -201,26 +203,26 @@ for (year in run.year) {
                            "shf_Avg(1)", "shf_Avg(2)")
     }
 
-    #############################################################################
-    ## step 1.13
-    ## new selection and arrangement / order of columns (for example all Temperatures grouped together and in ascending order, ... )
+    ###.........................................................................
+    ## step 1.13 new selection and arrangement / order of columns ----
+    ## (for example all Temperatures grouped together and in ascending order, ... )
 	  ## here: exclude all columns except "UTC" and the heatflux columns "shf_Avg(1)" and "shf_Avg(2)"
-    #############################################################################
+    ###.........................................................................
 
     file.i <- file.i[, c("UTC", "shf_Avg(1)", "shf_Avg(2)")]
 
-    #############################################################################
-    ## step 1.14
-    ## merge input data with date table
-    #############################################################################
+    ###.........................................................................
+    ## step 1.14 merge input data with date table ----
+    ##
+    ###.........................................................................
 
     # newdf.a <- merge(date.table, file.i, all.x = T, by = "UTC")
     newdf.a <- merge(storing.table[, 1:2], file.i, all.x = T, by = "UTC")
 
-    #############################################################################
-    ## step 1.15
-    ## merge date table with storing table
-    #############################################################################
+    ###.........................................................................
+    ## step 1.15 merge date table with storing table ----
+    ##
+    ###.........................................................................
 
     for (j in 2:(length(file.i[1, ]))) {
       storing.table[, j] <- rowMeans(cbind(storing.table[, j], newdf.a[, j + 1]), na.rm = T)
@@ -228,33 +230,33 @@ for (year in run.year) {
     }
   }
 
-  #############################################################################
-  ## step 1.16
-  ## convert numeric dates back to date format
-  #############################################################################
+  ###.........................................................................
+  ## step 1.16 convert numeric dates back to date format ----
+  ##
+  ###.........................................................................
 
   storing.table[, 1] <- format(as.POSIXct(storing.table[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
-  #############################################################################
-  ## step 1.17
-  ## set "sparc" colnames
-  #############################################################################
+  ###.........................................................................
+  ## step 1.17 set "sparc" colnames ----
+  ##
+  ###.........................................................................
 
   colnames(storing.table) <- c("UTC", "G_1", "G_2")
 
-  #############################################################################
-  ## step 1.18
-  ## Set NAN to NA
-  #############################################################################
+  ###.........................................................................
+  ## step 1.18 Set NAN to NA ----
+  ##
+  ###.........................................................................
 
   for (k in 2:ncol.storing.table) {
       storing.table[which(is.nan(as.numeric(storing.table[, k])) == TRUE), k] <- NA
   }
 
-  #############################################################################
-  ## step 1.19
-  ## save data to txt-file
-  #############################################################################
+  ###.........................................................................
+  ## step 1.19 save data to txt-file ----
+  ##
+  ###.........................................................................
 
   write.table(storing.table[as.numeric(format(as.POSIXct(storing.table[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
               paste0(p.1$w[p.1$n == "LV0.p"], "BaSoil2017/00_full_dataset/BaSoil2017_", year, "_lv0.dat"),

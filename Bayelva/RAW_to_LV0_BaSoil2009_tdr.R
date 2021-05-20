@@ -1,6 +1,6 @@
-#############################################################################
+###..........................................................................
 ##
-##   RAW to Level0
+##   RAW to Level0 ----
 ##
 ##   equal time steps,  no gaps,  (table flag, not implemented)
 ##
@@ -10,39 +10,44 @@
 ##   last check: 2020-04-14
 ##   checked by: christian.lehr@awi.de
 ##
-#############################################################################
+###..........................................................................
 ##
-## last modifications:
+## open issues: ----
+## - merge with temperature file
+###..........................................................................
+##
+## last modifications: ----
+##  2021-05-12 SL adapted to runner app and content management
 ##  2020-10-09 CL origin <- "01-01-1970" removed because it is not used and might create confusion with other scripts in the sequence of Bayelva_MAIN.R
 ##  2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
-## 2015-12-11 SL comma-seperation,  date-format to "%Y-%m-%d %H:%M",  NaN to NA
-## inclusive data of online status (up-to-date)
-#############################################################################
+##  2015-12-11 SL comma-seperation,  date-format to "%Y-%m-%d %H:%M",  NaN to NA
+##  inclusive data of online status (up-to-date)
+###..........................................................................
 # to run this script separately,  you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
 #   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
 #   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
 #   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-# #############################################################################
-#
+###..........................................................................
 
-########
+
+###..........................................................................
 # to run this script separately,  you have to set run.year:
 #
 # recent.year <- as.numeric(format(Sys.Date(),  "%Y"))
 # run.year <- recent.year
 # run.year <- 2020
-#######
+###..........................................................................
 
-
+## loop over years ----
 for (year in run.year) {
   #print(paste("running", year,  "of BaSoil2009-tdr's" ))
   start.date <- as.POSIXct(paste0(year, "-01-01 00:00:00"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -53,6 +58,7 @@ for (year in run.year) {
   compl.temp <- matrix(ncol = 2, nrow = length(seq(start.date, end.date, by = "hour")))
   compl.temp[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "hour"), format = '%Y-%m-%d %H:%M:%S', tz = "UTC"))
   colnames(compl.temp) <- c("V1", "leer")
+  ## input names  ----
   colnames(db.now) <- c("V1", "LaL(1)", "LaL(2)", "LaL(3)", "LaL(4)", "LaL(5)", "LaL(6)", "LaL(7)", "LaL(8)", "TDR_Cond(1)",
                       "TDR_Cond(2)", "TDR_Cond(3)", "TDR_Cond(4)", "TDR_Cond(5)", "TDR_Cond(6)", "TDR_Cond(7)", "TDR_Cond(8)",
                       "VWC(1)", "VWC(2)", "VWC(3)", "VWC(4)", "VWC(5)", "VWC(6)", "VWC(7)", "VWC(8)", "TableFlag")
@@ -85,13 +91,13 @@ for (year in run.year) {
 
   }
   rm(inz.path)
-  ## NA problem
+  ## NA problem ----
   for (kl in 2:ncol(db.now)) {
     db.now[, kl] <- as.numeric(db.now[, kl])
     db.now[is.nan(db.now[, kl]), kl] <- NA
   }
 
-
+  ## input names  ----
   # colnames(db.now) <- c("UTC", "LaL(1)", "LaL(2)", "LaL(3)", "LaL(4)", "LaL(5)", "LaL(6)", "LaL(7)", "LaL(8)", "TDR_Cond(1)",
   #                     "TDR_Cond(2)", "TDR_Cond(3)", "TDR_Cond(4)", "TDR_Cond(5)", "TDR_Cond(6)", "TDR_Cond(7)", "TDR_Cond(8)",
   #                     "VWC(1)", "VWC(2)", "VWC(3)", "VWC(4)", "VWC(5)", "VWC(6)", "VWC(7)", "VWC(8)", "TableFlag")
@@ -118,6 +124,7 @@ for (year in run.year) {
                         header = T, dec = ".", sep = ",", na = "NA")
 
   db.full <- cbind( db.temp[-12],  db.now[-1])
+  ## write data ----
   write.table(db.full, paste0(p.1$w[p.1$n == "BaS.lv0.p"] , "00_full_dataset/BaSoil2009_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
 

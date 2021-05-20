@@ -1,18 +1,19 @@
-#############################################################################
+###..........................................................................
 ##
-##   BaHole2009        RAW to Level0
+##   BaHole2009        RAW to Level0 ----
 ##
 ##   equal time steps, no gaps
 ##
 ##   by: Stephan.Lange@awi.de
 ##   last modified: 2020-04-14
 ##
-#############################################################################
-## last modifications:
+###..........................................................................
+## last modifications: ----
+##  2021-05-12 SL adapted to runnerapp and content management
 ##  2020-10-09 CL origin <- "01-01-1970" removed because it is not used and might create confusion with other scripts in the sequence of Bayelva_MAIN.R
 ##  2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
 ##
-#############################################################################
+###..........................................................................
 #  to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -26,27 +27,27 @@
 #   
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
+###..........................................................................
 
-## Input header
+## Input header ----
 #M-Log1 #A50282 - Incremental Data (Pos: 0) (Parameter Set: 'A50282_0307_240509.par')
 #Nr  Time	#3;Dig.Temp;oC	#4;Dig.Temp;oC	#5;Dig.Temp;oC	#6;Dig.Temp;oC	#7;Dig.Temp;oC	#8;Dig.Temp;oC	#9;Dig.Temp;oC	#10;Dig.Temp;oC	#11;Dig.Temp;oC	#12;Dig.Temp;oC	#HK-Bat;V
 
-#############################################################################
+###..........................................................................
 #
-#  Attention!!!
+#  Attention!!! ----
 #
 #  wrong order of temperature sensors
 #  see line 115-117
 #
-#############################################################################
+###..........................................................................
 
 # if you want to check of multiple values per date
 # set check.inconsitense to 1
 # (it takes time >> to reduce set line 66 to just one variable)
 as.num <- function(x){as.numeric(as.character(x))}
 
-######################################################
+###..........................................................................
 
 #tag <- format(Sys.Date()-1, format = '%d')
 #tagdavor <- format(Sys.Date()-2, format = '%d')
@@ -54,18 +55,17 @@ as.num <- function(x){as.numeric(as.character(x))}
 #jahr <- format(Sys.Date(), format = '%Y')
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
-########
+###..........................................................................
 # to run this script separately, you have to set run.year:
 #
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 # run.year <- recent.year
 # run.year <- 2020
-#######
-
+###..........................................................................
+## loop over years  ----
 for (year in run.year) {
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste(year, "-", 12, "-", 31, " 23:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
-  #end.date    <- as.POSIXct(paste(year, "-", monat, "-", tag, " 23:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
 
   db.bahole <- matrix(ncol = 12, nrow = length(seq(start.date, end.date, by = "hour")), -999)
   compl.temp <- matrix(ncol = 2, nrow = length(seq(start.date, end.date, by = "hour")))
@@ -118,8 +118,5 @@ for (year in run.year) {
               quote = F, dec = ".", sep = ",", row.names = F)
   cat("#\n# level0 BaHole2009: ", year, "without problems!\n#\n")
 }
-## and update the big one
-#write.table(db.bahole, paste(out.path , "BaHole2009_all.dat", sep = ""), quote = F, dec = ".", sep = ",", row.names = F)
-#print(paste("Bahole2009 without problems!"))
 
 

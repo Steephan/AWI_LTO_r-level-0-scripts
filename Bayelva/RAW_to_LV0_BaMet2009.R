@@ -1,29 +1,31 @@
-#############################################################################
+###.........................................................................
 ##
-##   BaMet2009         RAW to Level0
+##   BaMet2009         RAW to Level0 ----
 ##
 ##   equal time steps, no gaps, table flag
 ##
 ##   written by: Stephan.Lange@awi.de
-##               christian.lehr@awi.de
+##               
 ##
 ##   last check: 2020-02-03
 ##   checked by: christian.lehr@awi.de
 ##
-#############################################################################
+###.........................................................................
 ##
 ## open issues:
 ##
 ##  Attention!!!
 ##  2009 and 2010(1/2) without precipitation!    (bk0)
+##   - dsn correction to file
 ##   - Protocols says that they should be in BaSoil, but they didnt
 ##   - use instead BaMet98 data from former heidelberg database
 ##
 ##
 ##
-#############################################################################
+###.........................................................................
 #
-#  last modifications:
+#  last modifications: ----
+#  2021-05-12 SL adapted to runnerapp and content management
 #  2020-09-22 CL correction of the description of column names for file "20150909BaMet2010_bk2Online.dat".
 #                The file was wrongly stored in paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2015/") and is
 #                moved now to folder paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2015/")
@@ -41,9 +43,9 @@
 #  2016-02-15 SL sort/name soil
 #  2015-12-14 SL add empty colums to 2009-2015; new order of colums; add new in.path(2015)
 #
-#############################################################################
+###.........................................................................
 ##
-## Comments:
+## Comments: ----
 ##
 ##  Corrections:
 ##
@@ -53,26 +55,27 @@
 ##     short- / long-wave in ==> upper sensor
 ##     short- / long-wave out ==> lower sensor
 ##
-#############################################################################
+###.........................................................................
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
 #   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
 #   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
 #   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
+###.........................................................................
 
 
-#options(scipen = 100) # for non-exponential display of numeric values
-
-#origin <- "1970-01-01"
+# options(scipen = 100) # for non-exponential display of numeric values
+# 
+# origin <- "1970-01-01"
+# input folders  ----
 folders <- c(paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk0/"),
            paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk1/"),
            paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2015/"),
@@ -82,12 +85,12 @@ folders <- c(paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk0/"),
            paste0(p.1$w[p.1$n == "ONL.p"], "BaMet2015/"))
 
 
-########
-# to run this script separately, you have to set run.year:
+###.........................................................................
+#### to run this script separately, you have to set run.year:
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
-# run.year <- 2020:2020#recent.year
-########
-
+# run.year <- 2020#recent.year
+###.........................................................................
+# loop over years ----
 for (year in run.year) {
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste(year, "-", 12, "-", 31, " 23:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -100,7 +103,7 @@ for (year in run.year) {
   compl.temp[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = '%Y-%m-%d %H:%M:%S'))
   colnames(compl.temp) <- c("UTC", "erste")
 
-  # loop for all folders
+  # loop for all folders ----
   for (paz in c(1:length(folders))) { # 1:6 for all years
     inz.path <- folders[paz]
     #  cat("\nnow in ", folders[paz], "\n ==================== \n\n")
@@ -128,7 +131,9 @@ for (year in run.year) {
       dada <- check.double.entry(dada)
       dada[, 1] <- as.numeric(as.POSIXct(dada[, 1], format = '%Y-%m-%d %H:%M:%S', origin = origin, tz = "UTC"))
 
-      if (paz == 1) {    #Rain_Tot not in bk0
+      if (paz == 1) {    
+        # folder 1 ----
+        # Rain_Tot not in bk0
         colnames(dada) <- c("UTC", "RECORD", "Batt_Volt_Avg", "Temp_200_Avg", "RH_200_Avg", "wind_speed", "wind_dir", "wind_dir_sd",
                           "Raw_Dist", "distance_corr",
                           "Tair_4", "Tair_100", "Tair_20", "Ts_252_2", "Ts_252_12", "Ts_252_32", "Ts_252_62",
@@ -151,6 +156,7 @@ for (year in run.year) {
                         "IR01DnCo_Avg", "IR01UpCo_Avg", "SR01Up_raw_Avg", "SR01Dn_raw_Avg", "IR01Up_raw_Avg", "IR01Dn_raw_Avg", "NetRs_Avg",
                         "NetRl_Avg", "Albedo_Avg", "Tpan_RAD")]
       } else if ((paz == 2) | (paz == 3)) {
+        # folder 2 & 3 ----
         colnames(dada) <- c("UTC", "RECORD", "Batt_Volt_Avg", "Temp_200_Avg", "RH_200_Avg", "wind_speed", "wind_dir", "wind_dir_sd",
                           "Rain_Tot", "Raw_Dist", "distance_corr",
                           "Tair_4",
@@ -176,7 +182,7 @@ for (year in run.year) {
                         "IR01DnCo_Avg", "IR01UpCo_Avg", "SR01Up_raw_Avg", "SR01Dn_raw_Avg", "IR01Up_raw_Avg", "IR01Dn_raw_Avg", "NetRs_Avg",
                         "NetRl_Avg", "Albedo_Avg", "Tpan_RAD")]
       } else {
-        # paz ==  4
+        # folder 4 ----
         #       colnames(dada) <- c("UTC", "RECORD", "Batt_Volt_Avg", "Temp_200_Avg", "RH_200_Avg", "wind_speed_WVc(1)", "wind_speed_WVc(2)",
         #                         "wind_speed_WVc(3)", "Rain_Tot", "Raw_Dist", "snowheight", "PT100_T_Avg(1)", "PT100_T_Avg(2)", "PT100_T_Avg(3)",
         #                         "PT100_T_Avg(4)", "PT100_T_Avg(5)", "PT100_T_Avg(6)", "PT100_T_Avg(7)", "PT100_T_Avg(8)", "PT100_T_Avg(9)",
@@ -214,12 +220,7 @@ for (year in run.year) {
     }
   }
 
-  #db.bamet[1:10, ]
-  #db.bamet[, 1] <- format( as.POSIXct(db.bamet[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
-  #db.bamet[1:10, ]
-  # dates <- format( as.POSIXct(db.bamet[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
-  #dates[1:10]
-  # name columns of db.bamet according to data
+  # name columns of db.bamet according to data -----
   colnames(db.bamet) <- c("UTC", "batt_U", "Tair_100", "Tair_200", "RH_200", "wind_v_200", "wind_deg_200", "wind_sddeg_200",
                         "wind_vmax_200", "wind_vmin_200", "prec",
                         "distraw", "snowsq", "distcor", "Dsn",
@@ -231,11 +232,11 @@ for (year in run.year) {
                         "SwNet", "LwNet", "Albedo", "Tpan_NR1")
   #db.bamet[1:10, ]
 
-  ######################################################
-  ## corrections
-  ##### a) snow distance manipulation
-  ##### b) get prec from heidelberg db for 2009 & 2010
-  #####
+  ###.........................................................................
+  ## corrections ----
+  ##### a) snow distance manipulation ----
+  ##### b) get prec from heidelberg db for 2009 & 2010 ----
+  ###
   if (year == 2009) {
     #db.bamet[, 15]                            <- round(1.45-db.bamet[, 14], 3)
     db.bamet[, "Dsn"] <- round(1.45 - db.bamet[, "distcor"], 3)
@@ -306,8 +307,8 @@ for (year in run.year) {
   }
 
 
-  ######################
-  ##### c) correct short-wave and long-wave radiation with multiplier values
+  ###.........................................................................
+  ##### c) correct short-wave and long-wave radiation with multiplier values ----
   ## short- / long-wave in ==> upper sensor
   ## short- / long-wave out ==> lower sensor
   ## re-calculate the netto radiation
@@ -393,12 +394,12 @@ for (year in run.year) {
     db.bamet[ind, "Albedo"] <- db.bamet[ind, "SwOut"] / db.bamet[ind, "SwIn"]
   }
 
-  ####################################################
+  ###.........................................................................
   # add new column RadNet netto radiation
   # calculation of RadNet analogue to Pangaea-dataset
   db.bamet <- cbind(db.bamet, round((db.bamet[, "SwIn"] + db.bamet[, "LwIn"]) - (db.bamet[, "SwOut"] + db.bamet[, "LwOut"]), 3))
   colnames(db.bamet)[44] <- "RadNet"
-  ######################
+  ###.........................................................................
   ## format dates
   db.bamet[, 1] <- format( as.POSIXct(db.bamet[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
   db.bamet[(as.character(db.bamet[, 43]) == "inf"), 43] <- NA
@@ -416,8 +417,8 @@ for (year in run.year) {
                         "SwNet", "LwNet", "Albedo", "RadNet", "Tpan_NR1")]
 #  db.bamet[, 1] <- format( as.POSIXct(db.bamet[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
-  #############
-  ## write tables
+  ###.........................................................................
+  ## write tables ----
   #if (file.exists(paste(out.path, "data", sep = "")) ==  FALSE) { dir.create(paste(out.path, "data/", sep = "")) }
   # write.table(db.bamet[as.numeric(format(as.POSIXct(db.bamet[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
   #             paste0(paste(p.1$w[p.1$n == "LV0.p"]) , "BaMet2009/00_full_dataset/BaMet2009_", year, ".dat"), quote = F, dec = ".", sep = ",", row.names = F)
@@ -430,5 +431,3 @@ for (year in run.year) {
 
 } # end loop over years
 
-# source('N:/geo5/SoilData/doc/scripts/database_R/Ba_02_Lvl0_Lvl1/LV0_to_LV1_BaMet2009.R')
-# source('N:/geo5/SoilData/doc/scripts/database_R/Ba_03_Lvl1/LV1_plots_BaMet2009.R')

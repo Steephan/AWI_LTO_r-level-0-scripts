@@ -1,30 +1,31 @@
-#############################################################################
+###..........................................................................
 ##
-##   BaSnow2013        RAW to Level0
+##   BaSnow2013        RAW to Level0 ----
 ##
 ##   Snow depth data from sensor SHM 30
 ##   manual: http://sparcwiki.awi-potsdam.de/lib/exe/fetch.php?media=public:sensors:jenoptik:shm30_v201508.pdf
 ##
 ##   written by: Stephan.Lange@awi.de
-##               christian.lehr@awi.de
-##   last modified: 2020-04-14
+##               
+##   last modified: 2021-05-12
 ##
 ##   last check: 2020-01-22
 ##   checked by: christian.lehr@awi.de
 ##
-#############################################################################
+###..........................................................................
 ##
-## open issues:
+## open issues: ----
 ##  - include error flags from the sensor:
 ##    p. 41 in manual
 ##
-##   ?? equal time steps(30min), no gaps,( table flag)-fehlt noch!! ??
+##   ?? equal time steps(30min), no gaps,( table flag)
 ##
 ## ??? - save constant digits (2.1000 instead of 2.1) ???
 ##
-#############################################################################
+###..........................................................................
 ##
-## last modifications:
+## last modifications: ----
+##  2021-05-12 SL adapted to runnerapp and content management
 ##  2020-10-09 CL origin <- "01-01-1970" removed because it is not used and might create confusion with other scripts in the sequence of Bayelva_MAIN.R
 ##  2020-10-07 CL add snowdepth correction starting at 2019-06-29 00:00
 ##  2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
@@ -41,9 +42,9 @@
 ##    !!! ==> this function is currently uncommented !!!!
 ##
 ##
-#############################################################################
+###..........................................................................
 ##
-## Comments:
+## Comments: ----
 ##
 ##
 ## the raw data is formatted in a special format
@@ -60,15 +61,15 @@
 ##
 ## ==> select only those lines of the txt.laser file which consist of 45 characters (==> Attention! For the format of the character string, the type "bytes" has to be used)
 ##
-################
+###..........................................................................
 ## ??
-## Input header:
+## Input header: ----
 ##
 ##  ... no header!
 ##
 ## !! ATTENTION there are some rows missing in 2015-06-13 !!
 ##
-#############################################################################
+###..........................................................................
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -82,19 +83,19 @@
 #   
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
+###..........................................................................
 
 
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
-########
+###..........................................................................
 # to run this script separately, you have to set run.year:
 #
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 # run.year <- recent.year
 # run.year <- 2020
-#######
-
+###..........................................................................
+## loop over years ----
 for (year in run.year) {
 
   start.date <- as.POSIXct(paste("01.01.", year, " 00:00", sep = ""), format = '%d.%m.%Y %H:%M', tz = "UTC")
@@ -129,25 +130,25 @@ for (year in run.year) {
     for (zz in 1:length(txt.laser)) {
       data.laser[zz, 1] <- format(strptime(substr(txt.laser[zz], 1, 14), format = "%d.%m.%y %H:%M"), format = '%Y-%m-%d %H:%M')
       data.laser[zz, 2] <- suppressWarnings(as.numeric(substr(txt.laser[zz], 22, 27)))
-      ##################
+      ###..........................................................................
       ## ??? remove values with error-flag "15" ???
       ## this function is uncommented at the moment!!!
-      ##################
+      ###..........................................................................
       #  data.laser[zz,3] <- suppressWarnings(as.num(substr(txt.laser[zz],40,42)))
-      ##################
+      ###..........................................................................
 
     }
 
     colnames(data.laser) <- c("V1", "V2")#,"V3")
     ## laser signal returns after 35 seconds ... round down to get 00:00:00 time
     data.laser$V1 <- as.numeric(as.POSIXct(data.laser[, 1], format = '%Y-%m-%d %H:%M', tz = "UTC"))
-    ##################
+    ###..........................................................................
     ## ??? remove values with error-flag "15" ???
     ## this function is uncommented at the moment!!!
     # data.laser           <- data.laser[!(data.laser[,3]>=15),]
     if (length(data.laser$V1) > 0) {### if it is empty, you do not have to aggregate
       newdf.c <- merge(compl.temp2, data.laser, all.x = T, by = "V1")
-      #############
+      ###..........................................................................
       # duplicated values:
       ind <- which(duplicated(newdf.c[, 1]) == TRUE)
       # if there are duplicated values, remove the duplicated rows
@@ -159,13 +160,13 @@ for (year in run.year) {
         # remove duplicated rows
         newdf.c <- newdf.c[-ind, ]
       }
-      #############
+      ###..........................................................................
       db.basnow[, 2] <- round(rowMeans(cbind(db.basnow[, 2], newdf.c[, 4]), na.rm = T), 4)
       ## db.basnow[,3]        <- round(rowMeans(cbind(db.basnow[,3],newdf.c[,4]),na.rm=T),4)
     }
   }
 
-  ## NA problem
+  ## NA problem ----
   for (kl in 2:ncol(db.basnow)) {# ist in diesem Fall nur eine Schleife fuer 1 Spalte
     db.basnow[, kl] <- as.numeric(db.basnow[, kl])
     db.basnow[is.nan(db.basnow[, kl]), kl] <- NA
@@ -177,9 +178,9 @@ for (year in run.year) {
   colnames(db.basnow) <- c("UTC", "Dsn", "Dsn_fl_logger")
   db.basnow <- db.basnow[, 1:2]
 
-  #######################
-  # data manipulation
-  #####
+  ###..........................................................................
+  # data manipulation ----
+  ###..........................................................................
   # correct snow distance
   if (year == 2019) {
     ind1 <- which(db.basnow$UTC == "2019-06-29 00:00")
@@ -189,8 +190,8 @@ for (year in run.year) {
   if (year > 2019) {
     db.basnow[, "Dsn"] <- round(db.basnow[, "Dsn"] - 0.01, 3)
   }
-  #######################
-
+  ###..........................................................................
+  ## write data ----
   write.table(db.basnow, paste0(paste(p.1$w[p.1$n == "LV0.p"]), "BaSnow2013/00_full_dataset/BaSnow2013_", year, "_lv0.dat"),
               quote = F, dec = ".", sep = ",", row.names = F)
 

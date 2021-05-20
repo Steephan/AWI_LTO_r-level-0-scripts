@@ -1,16 +1,16 @@
-#############################################################################
+###..........................................................................
 ##
-##   BaSnow2019         RAW to Level0
+##   BaSnow2019         RAW to Level0 ----
 ##
 ##   equal time steps, no gaps
 ##
-#############################################################################
+###..........................................................................
 ##
-## open issues:
+## open issues: ----
 ##
 ##
 ##
-#############################################################################
+###..........................................................................
 ##
 ##   written by: stephan.lange@awi.de
 ##               christian.lehr@awi.de
@@ -18,17 +18,17 @@
 ##   last check: 2020-01-22
 ##   checked by: christian.lehr@awi.de
 ##
-#############################################################################
+###..........................................................................
 ##
-## last modifications:
+## last modifications: ----
 ##  2021-04-12 SL change DSN form lv0 (instead of lv1), add 2021 corrections
 ##  2020-08-18 CL include calculation of "rho_K" (snow density calculated from "SWE_K" and "Dsn")
 ##  2020-08-18 CL "TL" and "KTL" changed to "Tl" and "KTl" (Tl: Thallium)
 ##  2020-04-14 CL change loop to (year in run.year) to allow the selection of the processed year in Bayelva_MAIN.R
 ##
-#############################################################################
+###..........................................................................
 ##
-## Comments:
+## Comments: ----
 ##
 ## There are two cases:
 ## CASE 1 - BaSnow2019_SR50.dat
@@ -45,10 +45,10 @@
 ## ==> step 1.19 calculate Snowheight from distcorr
 ##
 ##
-#############################################################################
-## step 1.01
-## set path settings for different systems linux vs. windoof
-#############################################################################
+###..........................................................................
+## step 1.01 set path settings for different systems linux vs. windoof ----
+##
+###..........................................................................
 # to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -62,36 +62,36 @@
 # 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
-## step 1.02
-## set running options years, ...
-#############################################################################
+###..........................................................................
+## step 1.02 set running options years, ... ----
+##
+###..........................................................................
 # options(scipen = 100) # for non-exponential display of numeric values
 # origin <- "1970-01-01"
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 # 
-########
+###..........................................................................
 # to run this script separately, you have to set run.year:
 #
 # run.year <- recent.year
 # run.year <- 2019:2021
-#######
+###..........................................................................
 
-#############################################################################
-## CASE 1 - BaSnow2019_SR50.dat
-#############################################################################
-## step 1.03
-## loop 1 over years
-#############################################################################
+###..........................................................................
+## CASE 1 - BaSnow2019_SR50.dat ----
+###..........................................................................
+## step 1.03 loop 1 over years ----
+##
+###..........................................................................
 
 origin <- "1970-01-01"
 
 for (year in run.year) {
-  #############################################################################
-  ## step 1.04
-  ## set 2 empty tables with length of year
+  ###..........................................................................
+  ## step 1.04 set 2 empty tables with length of year ----
+  ##
   ## columns: 2 (date table) and number of input table (storing table)
-  #############################################################################
+  ###..........................................................................
   #cat("\nProcessing year",year,"\n====================\n\n")
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste(year, "-", 12,"-", 31," 23:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -102,39 +102,39 @@ for (year in run.year) {
   db.basnow.sr[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "60 min"), format = '%Y-%m-%d %H:%M:%S'))
   compl.temp[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date,by = "60 min"), format = '%Y-%m-%d %H:%M:%S'))
   colnames(compl.temp) <- c("UTC","erste")
-  #############################################################################
-  ## step 1.05
-  ## set input.path and list all files
-  #############################################################################
+  ###..........................................................................
+  ## step 1.05 set input.path and list all files ----
+  ##
+  ###..........................................................................
   inz.path <- paste0(p.1$w[p.1$n == "ONL.p"], "BaSnow2019sr/")
   files2read <- list.files(inz.path, pattern = "*.dat")
-  #############################################################################
-  ## step 1.06
-  ## loop 2 over all files
-  #############################################################################
+  ###..........................................................................
+  ## step 1.06 loop 2 over all files ----
+  ##
+  ###..........................................................................
 
   for (i in 1:length(files2read)) {
-    #############################################################################
-    ## step 1.07
-    ## read one file (skip headers, set NA-values)
+    ###..........................................................................
+    ## step 1.07 read one file (skip headers, set NA-values) ----
+    ##
     ## set temporal colnames
-    #############################################################################
+    ###..........................................................................
     #cat("\nprocessing ",files2read[i],"\n====================\n\n")
     dada <- read.table(paste(inz.path, files2read[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
     colnames(dada) = paste0("V", seq_len(ncol(dada)))
-    #############################################################################
-    ## step 1.09
-    ## check file if dates are in running year of loop 1
-    #############################################################################
+    ###..........................................................................
+    ## step 1.09 check file if dates are in running year of loop 1 ----
+    ##
+    ###..........................................................................
 
     if (as.numeric(substr(lapply(dada[1, 1], as.character), 1, 4)) > year || as.numeric(substr(lapply(dada[length(dada[, 1]), 1], as.character), 1, 4)) < year) {next} # skip file if wrong year
     # print to check whether date of the read data is assigned to the correct year
     # cat(paste(dada[1,1],"     to     ",dada[length(dada[,1]),1],"    ",files2read[i], "\n"))
-    #############################################################################
-    ## step 1.10
-    ## check file for double entries
-    #############################################################################
+    ###..........................................................................
+    ## step 1.10 check file for double entries ----
+    ##
+    ###..........................................................................
     if (("TRUE" %in% duplicated(dada)) == TRUE) { # check for fully double entries
       doouble <- duplicated(dada)
       # cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
@@ -150,83 +150,83 @@ for (year in run.year) {
       # cat("No double data entries found in", files2read[i], "\n\n")
     }
 
-    #############################################################################
-    ## step 1.11
-    ## convert date to numeric value
-    #############################################################################
+    ###..........................................................................
+    ## step 1.11 convert date to numeric value ----
+    ##
+    ###..........................................................................
     dada[, 1] <- as.numeric(as.POSIXct(dada[, 1], format = '%Y-%m-%d %H:%M:%S', origin = origin, tz = "UTC"))
-    #############################################################################
-    ## step 1.12a
-    ## special case: former files with different columns
+    ###..........................................................................
+    ## step 1.12a special case: former files with different columns ----
+    ##
     ## set colnames
-    #############################################################################
+    ###..........................................................................
     if (length(dada[1, ]) == 7) {
       colnames(dada) <- c("UTC","RECORD","AirTempC","TCDT","Q","DT","RawQ")
-      #############################################################################
-      ## step 1.12b
-      ## add additional columns to former dataset
-      #############################################################################
+      ###..........................................................................
+      ## step 1.12b add additional columns to former dataset ----
+      ##
+      ###..........................................................................
       # dada$Dsn  <-NA  # column for calculated snowdepth
 
     } else {
-    #############################################################################
-    ## step 1.12
-    ## standard case
+      ###..........................................................................
+    ## step 1.12 standard case ----
+    ##
     ## set original colnames
-    #############################################################################
+      ###..........................................................................
     colnames(dada) <- c("UTC", "RECORD", "AirTempC", "TCDT", "Q", "DT", "RawQ")
     }
 
-    #############################################################################
-    ## step 1.13
-    ## new arrangement / order of columns (all Temperatures together, ascending, ... )
+    ###..........................................................................
+    ## step 1.13 new arrangement / order of columns (all Temperatures together, ascending, ... ) ----
+    ##
     ## exclude column "RECORD"
-    #############################################################################
+    ###..........................................................................
     dada <- dada[, c("UTC", "AirTempC", "TCDT", "Q", "DT", "RawQ")]
-    #############################################################################
-    ## step 1.14
-    ## merge input data with date table
-    #############################################################################
+    ###..........................................................................
+    ## step 1.14 merge input data with date table ----
+    ##
+    ###..........................................................................
 
     newdf.a <- merge(compl.temp, dada, all.x = T, by = "UTC")
 
-    #############################################################################
-    ## step 1.15
-    ## merge date table with storing table
-    #############################################################################
+    ###..........................................................................
+    ## step 1.15 merge date table with storing table ----
+    ##
+    ###..........................................................................
 
     for (k in 2:(length(dada[1, ]))) {
       db.basnow.sr[, k] <- rowMeans(cbind(db.basnow.sr[, k], newdf.a[, k + 1]), na.rm = T)#
     }
   }
 
-  #############################################################################
-  ## step 1.16
-  ## convert numeric dates back to date format
-  #############################################################################
+  ###..........................................................................
+  ## step 1.16 convert numeric dates back to date format ----
+  ##
+  ###..........................................................................
 
   db.basnow.sr[, 1] <- format(as.POSIXct(db.basnow.sr[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
-  #############################################################################
-  ## step 1.17
-  ## set "sparc" colnames
-  #############################################################################
+  ###..........................................................................
+  ## step 1.17 set "sparc" colnames ----
+  ##
+  ###..........................................................................
 
   colnames(db.basnow.sr) <- c("UTC", "Tair_200", "distcor", "QA", "distraw", "QA_raw", "Dsn")
 
-  #############################################################################
-  ## step 1.18
-  ## Set NAN to NA
-  #############################################################################
+  ###..........................................................................
+  ## step 1.18 Set NAN to NA ----
+  ##
+  ###..........................................................................
 
   for (val in 2:7) {
     db.basnow.sr[which(is.nan(as.numeric(db.basnow.sr[, (val)])) == TRUE), val] <- NA   # set NAN to NA
   }
 
-  #############################################################################
-  ## step 1.19
-  ## calculate Snowheight from distcorr
-  #############################################################################
+  ###..........................................................................
+  ## step 1.19 calculate Snowheight from distcorr ----
+  ##
+  ###..........................................................................
 
   
   dsn.corr <- read.table(paste0(p.1$w[p.1$n == "settings.p"], "DSNcorr.files/BaSnow2019_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
@@ -245,10 +245,10 @@ for (year in run.year) {
   }
   
 
-  #############################################################################
-  ## step 1.20
-  ## safe data to txt-file
-  #############################################################################
+  ###..........................................................................
+  ## step 1.20 safe data to txt-file ----
+  ##
+  ###..........................................................................
 
   write.table(db.basnow.sr[as.numeric(format(as.POSIXct(db.basnow.sr[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
               paste0(p.1$w[p.1$n == "LV0.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv0.dat"),
@@ -261,19 +261,19 @@ for (year in run.year) {
 
 
 
-#############################################################################
-## CASE 2 - BaSnow2019_CS725.dat
-#############################################################################
-## step 1.03
-## loop 1 over years
-#############################################################################
+###..........................................................................
+## CASE 2 - BaSnow2019_CS725.dat ----
+###..........................................................................
+## step 1.03 loop 2 over years ----
+##
+###..........................................................................
 
 for (year in run.year) {#2013:2016 2012:aktuell
-  #############################################################################
-  ## step 1.04
-  ## set 2 empty tables with length of year
+  ###..........................................................................
+  ## step 1.04 set 2 empty tables with length of year ----
+  ##
   ## columns: 2 (date table) and number of input table (storing table)
-  #############################################################################
+  ###..........................................................................
   #cat("\nProcessing year",year,"\n====================\n\n")
   start.date <- as.POSIXct(paste(year, "-01-01 00:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date   <- as.POSIXct(paste(year, "-", 12, "-", 31," 18:30:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -286,39 +286,39 @@ for (year in run.year) {#2013:2016 2012:aktuell
   db.basnow.cs[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "6 hours"), format = '%Y-%m-%d %H:%M:%S'))
   compl.temp[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "6 hours"), format = '%Y-%m-%d %H:%M:%S'))
   colnames(compl.temp) <- c("UTC", "erste")
-  #############################################################################
-  ## step 1.05
-  ## set input.path and list all files
-  #############################################################################
+  ###..........................................................................
+  ## step 1.05 set input.path and list all files ----
+  ##
+  ###..........................................................................
   inz.path <- paste0(p.1$w[p.1$n == "ONL.p"], "BaSnow2019cs/")
   files2read <- list.files(inz.path, pattern = "*.dat")
-  #############################################################################
-  ## step 1.06
-  ## loop 2 over all files
-  #############################################################################
+  ###..........................................................................
+  ## step 1.06 loop 2 over all files ----
+  ##
+  ###..........................................................................
 
   for (i in 1:length(files2read)) {
-    #############################################################################
-    ## step 1.07
+    ###..........................................................................
+    ## step 1.07 ----
     ## read one file (skip headers, set NA-values)
     ## set temporal colnames
-    #############################################################################
+    ###..........................................................................
     #cat("\nprocessing ",files2read[i],"\n====================\n\n")
     dada <- read.table(paste(inz.path, files2read[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
 
     colnames(dada) = paste0("V", seq_len(ncol(dada)))
-    #############################################################################
-    ## step 1.09
+    ###..........................................................................
+    ## step 1.09 ----
     ## check file if dates are in running year of loop 1
-    #############################################################################
+    ###..........................................................................
 
     if (as.numeric(substr(lapply(dada[1, 1], as.character), 1, 4)) > year || as.numeric(substr(lapply(dada[length(dada[, 1]), 1], as.character), 1, 4)) < year) {next} # skip file if wrong year
     # print to check whether date of the read data is assigned to the correct year
     # cat(paste(dada[1,1],"     to     ",dada[length(dada[,1]),1],"    ",files2read[i], "\n"))
-    #############################################################################
-    ## step 1.10
+    ###..........................................................................
+    ## step 1.10 ----
     ## check file for double entries
-    #############################################################################
+    ###..........................................................................
     if (("TRUE" %in% duplicated(dada)) == TRUE) { # check for fully double entries
       doouble <- duplicated(dada)
       # cat(paste(length(which(doouble == "TRUE")), "duplicated records found in file", files2read[i], "\n",
@@ -335,39 +335,39 @@ for (year in run.year) {#2013:2016 2012:aktuell
       } else {
         # cat("No double data entries found in", files2read[i], "\n\n")
         }
-    #############################################################################
-    ## step 1.11
-    ## convert date to numeric value
-    #############################################################################
+    ###..........................................................................
+    ## step 1.11 convert date to numeric value ----
+    ##
+    ###..........................................................................
 
     dada[, 1] <- as.numeric(as.POSIXct(dada[, 1], format = '%Y-%m-%d %H:%M:%S', origin = origin, tz = "UTC"))
-    #############################################################################
-    ## step 1.12a
-    ## special case: former files with different columns
+    ###..........................................................................
+    ## step 1.12a special case: former files with different columns ----
+    ##
     ## set colnames
-    #############################################################################
+    ###..........................................................................
     if (length(dada[1, ]) == 15) {
     colnames(dada) <- c("UTC","RECORD","CS725_TIME_String","CS725_StationID","CS725_SerialNum","CS725_K_Counts","CS725_Tl_Counts","CS725_SWE_K","CS725_K_Tl_Ratio","CS725_SWE_Tl","CS725_Crystal_TEMP_MIN","CS725_Crystal_TEMP_MAX","CS725_Hist_Blocks","CS725_K_Disp","CS725_PWR_Volt")
-      #############################################################################
-      ## step 1.12b
-      ## add additional columns to former dataset
-      #############################################################################
+    ###..........................................................................
+      ## step 1.12b add additional columns to former dataset ----
+      ##
+    ###..........................................................................
 
       # dada$Dsn  <-NA  # column for calculated snowdepth
 
       } else {
-      #############################################################################
-      ## step 1.12
-      ## standard case
+        ###..........................................................................
+      ## step 1.12 standard case ----
+      ##
       ## set original colnames
-      #############################################################################
+        ###..........................................................................
 
       colnames(dada) <- c("UTC","RECORD","CS725_TIME_String","CS725_StationID","CS725_SerialNum","CS725_K_Counts","CS725_Tl_Counts","CS725_SWE_K","CS725_K_Tl_Ratio","CS725_SWE_Tl","CS725_Crystal_TEMP_MIN","CS725_Crystal_TEMP_MAX","CS725_Hist_Blocks","CS725_K_Disp","CS725_PWR_Volt")
       }
-      #############################################################################
-      ## step 1.13
-      ## new arrangement / order of columns (all Temperatures together, ascending, ... )
-      ######
+    ###..........................................................................
+      ## step 1.13 new arrangement / order of columns (all Temperatures together, ascending, ... ) ----
+      ##
+    ###..........................................................................
       ## ==> page 30 in campbell_scientific:cs725_cs_manual_v20120801.pdf "The CS725 uses a thallium doped sodium iodide crystal NaI(Tl) for detecting the gamma radiation"
       ##
       ## check page 11 in campbell_scientific:cs725_cs_manual_v20120801.pdf for names of the records in the columns ==> http://sparcwiki.awi-potsdam.de/lib/exe/fetch.php?media=public:sensors:campbell_scientific:cs725_cs_manual_v20120801.pdf
@@ -384,68 +384,66 @@ for (year in run.year) {#2013:2016 2012:aktuell
       ## "CS725_Hist_Blocks": Total number of histogram blocks used for the analysis
       ## "CS725_K_Disp":  Displacement of the K peak from its nominal position (in bins)
       ## "CS725_PWR_Volt": Power input voltage at the CS725 (after protection diode drop)
-      ######
+    ###..........................................................................
       ## exclude columns "RECORD","CS725_TIME_String","CS725_StationID","CS725_SerialNum","CS725_Hist_Blocks","CS725_K_Disp"
-      #############################################################################
+    ###..........................................................................
       dada <- dada[, c("UTC","CS725_K_Counts","CS725_Tl_Counts","CS725_SWE_K","CS725_K_Tl_Ratio","CS725_SWE_Tl","CS725_Crystal_TEMP_MIN","CS725_Crystal_TEMP_MAX","CS725_PWR_Volt")]
-      #############################################################################
-      ## step 1.14
-      ## merge input data with date table
-      #############################################################################
+      ###..........................................................................
+      ## step 1.14 merge input data with date table ----
+      ##
+      ###..........................................................................
 
       newdf.a <- merge(compl.temp, dada, all.x = T, by = "UTC")
 
-      #############################################################################
-      ## step 1.15
-      ## merge date table with storing table
-      #############################################################################
+      ###..........................................................................
+      ## step 1.15 merge date table with storing table ----
+      ##
+      ###..........................................................................
 
       for (k in 2:(length(dada[1, ]))) {
         db.basnow.cs[, k] <- rowMeans(cbind(db.basnow.cs[, k], newdf.a[, k + 1]), na.rm = T)#
         }
   }
 
-  #############################################################################
-  ## step 1.16
-  ## convert numeric dates back to date format
-  #############################################################################
+  ###..........................................................................
+  ## step 1.16 convert numeric dates back to date format ----
+  ##
+  ###..........................................................................
   # the sensor CS725 measures every 6 hours, the logger logs the data at 00:30, 06:30, 12:30 and 18:30 of every day.
   # substract 30 minutes to get the hours 00:00, 06:00, 12:00, 18:00 of every day.
   db.basnow.cs[, 1] <- db.basnow.cs[, 1] - (60 * 30)
   db.basnow.cs[, 1] <- format( as.POSIXct(db.basnow.cs[, 1], origin = origin, tz = "UTC"), format = '%Y-%m-%d %H:%M')
 
-  #############################################################################
-  ## step 1.17
-  ## set "sparc" colnames
-  #############################################################################
+  ###..........................................................................
+  ## step 1.17 set "sparc" colnames ----
+  ##
+  ###..........................................................................
 
   colnames(db.basnow.cs) <- c("UTC","CountsK","CountsTl","SWE_K","KTl_Ratio","SWE_Tl","Tcryst_min","Tcryst_max","batt_U")
 
-  #############################################################################
-  ## step 1.18
-  ## Set NAN to NA
-  #############################################################################
+  ###..........................................................................
+  ## step 1.18 Set NAN to NA ----
+  ##
+  ###..........................................................................
 
   for (val in 2:ncol.db.basnow.cs) {
     db.basnow.cs[which(is.nan(as.numeric(db.basnow.cs[, (val)])) == TRUE), val] <- NA   # set NAN to NA
     }
 
 
-  #############################################################################
-  ## step 1.19
-  ## new variables:
+  ###..........................................................................
+  ## step 1.19 add new variables: ----
+  ##
   ## a) Dsn: snow depth is inherited from BaSnow2019sr
   ## b) rho_K: snow density is calculated from snow depth ("Dsn") and snow water equivalent determined with K ("SWE_K")
-  #############################################################################
+  ###..........................................................................
 
-  # ba.snow.sr <- read.table(file = paste0(p.1$w[p.1$n == "LV1.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv1.dat"),
-  #                          sep = ",", dec = ".", header = T)
   ba.snow.sr <- read.table(file = paste0(p.1$w[p.1$n == "LV0.p"], "BaSnow2019sr/00_full_dataset/BaSnow2019sr_", year, "_lv0.dat"),
                            sep = ",", dec = ".", header = T)
   
   db.basnow.cs <- data.frame(db.basnow.cs, Dsn = NA, rho_K = NA)
   #db.basnow.cs <- cbind(db.basnow.cs, Dsn = NA, SWE_K = NA)
-  # a) Dsn
+  # a) Dsn ----
   # ind.6hours.ba.snow.sr: index of the hours "00:00, 06:00, 12:00, 18:00" (6 hours temporal resolution) in the ba.snow.sr data set
   # ==> this is the same temporal resolution like "BaSnow2019cs"
   ind.6hours.ba.snow.sr <- seq(1, nrow(ba.snow.sr), by = 6)
@@ -457,17 +455,17 @@ for (year in run.year) {#2013:2016 2012:aktuell
   #db.basnow.cs[ind.basnow.cs_6hours.ba.snow.sr, which(colnames(db.basnow.cs) == "Dsn")] <- ba.snow.sr[ind.6hours.ba.snow.sr, "Dsn"]
   db.basnow.cs[ind.basnow.cs_6hours.ba.snow.sr, "Dsn"] <- ba.snow.sr[ind.6hours.ba.snow.sr, "Dsn"]
 
-  # b) rho_K
-  ###########
+  # b) rho_K ----
+  ###..........................................................................
   # b) snow density ("rho_K") is calculated from snow depth ("Dsn") and snow water equivalent determined with K ("SWE_K")
   # "SWE_K" in mm ==> page 10, manual cs725_cs_manual_v20120801.pdf
   # "Dsn" in m
   db.basnow.cs[, "rho_K"] <- round(as.numeric(db.basnow.cs$SWE_K) / (db.basnow.cs$Dsn * 1000), 3)
 
-  #############################################################################
-  ## step 1.20
-  ## safe data to txt-file
-  #############################################################################
+  ###..........................................................................
+  ## step 1.20 safe data ----
+  ##
+  ###..........................................................................
 
   write.table(db.basnow.cs[as.numeric(format(as.POSIXct(db.basnow.cs[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year, ],
               paste0(p.1$w[p.1$n == "LV0.p"], "BaSnow2019cs/00_full_dataset/BaSnow2019cs_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)

@@ -16,7 +16,7 @@
 ## set path settings for different systems linux vs. windoof
 ##################################################################
 # to run this script seperate, you have to uncomment the next 10 lines!
-rm(list = ls())
+#rm(list = ls())
 # if (.Platform$OS.type == "windows") {
 #  path<-read.table("N:/geo5/SoilData/doc/scripts/database_R/settings/sa_path_windoof.txt",sep="\t",header=T)
 #  maint<-read.table("N:/geo5/SoilData/doc/scripts/database_R/settings/sa_maintance.txt",sep="\t",header=T)
@@ -211,14 +211,6 @@ for (year in 2013:2014) { # 2014:aktuell
 }
 cat("\n#\n# KuLucky12013 without problems! \n#\n")
 
-
-# control plot
-# ggplot(db.kull2)+
-#  geom_point(mapping = aes(UTC,P_raw),size=0.1)+
-#  geom_point(mapping = aes(UTC,P),size=0.1,col="blue")
-# ggplot(db.kull2)+
-#  geom_point(mapping = aes(UTC,WT),size=0.1,col="red")
-###################################################################
 #
 # Erklärung Tabellenkopf:
 # UTC - time (format: YY-MM-DD HH:MM:SS)

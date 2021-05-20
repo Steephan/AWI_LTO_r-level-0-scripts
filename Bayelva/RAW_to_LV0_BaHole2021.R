@@ -1,17 +1,17 @@
-#############################################################################
+###.........................................................................
 ##
-##   BaHole2021        RAW to Level0
+##   BaHole2021        RAW to Level0 ----
 ##
 ##   equal time steps, no gaps
 ##
 ##   by: Stephan.Lange@awi.de
-##   last modified: 2021-04-01
+##   last modified: 2021-05-12
 ##
-#############################################################################
-## last modifications:
-##  
+###.........................................................................
+## last modifications: ----
+##  2021-05-12 SL adapted to runner app and content management
 ##
-#############################################################################
+###.........................................................................
 #  to run this script separately, you have to uncomment the next 10 lines!
 # rm(list = ls())
 # if (.Platform$OS.type == "windows") {
@@ -25,7 +25,7 @@
 # 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
-#############################################################################
+###.........................................................................
 
 ## Input header
 ## "TOA5","CR300-BaHole2021","CR300","9125","CR310.Std.10.02","CPU:BaHole2021_v202102_2_1h.CR300","35031","Data_temp_cal"
@@ -33,12 +33,6 @@
 ## "TS","RN","Volts","Deg C","Deg C","Deg C","Deg C","Deg C","Deg C","Deg C","Deg C","Deg C","Deg C","Deg C"
 ## "","","Min","Avg","Avg","Avg","Avg","Avg","Avg","Avg","Avg","Avg","Avg","Avg"
 
-# if you want to check of multiple values per date
-# set check.inconsitense to 1
-# (it takes time >> to reduce set line 66 to just one variable)
-# as.num <- function(x){as.numeric(as.character(x))}
-# origin <- "1970-01-01"
-######################################################
 
 #tag <- format(Sys.Date()-1, format = '%d')
 #tagdavor <- format(Sys.Date()-2, format = '%d')
@@ -46,14 +40,14 @@
 #jahr <- format(Sys.Date(), format = '%Y')
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
-########
+###.........................................................................
 # to run this script separately, you have to set run.year:
 #
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 # run.year <- recent.year
 # run.year <- 2021
-#######
-
+###.........................................................................
+## loop over years ----
 for (year in run.year) {
   start.date <- as.POSIXct(paste(year, "-01-01 00:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date <- as.POSIXct(paste(year, "-", 12, "-", 31, " 23:00:00", sep = ""), format = '%Y-%m-%d %H:%M:%S', tz = "UTC")
@@ -103,8 +97,6 @@ for (year in run.year) {
               quote = F, dec = ".", sep = ",", row.names = F)
   cat("#\n# level0 BaHole2021: ", year, "without problems!\n#\n")
 }
-## and update the big one
-#write.table(db.bahole, paste(out.path , "BaHole2009_all.dat", sep = ""), quote = F, dec = ".", sep = ",", row.names = F)
-#print(paste("Bahole2009 without problems!"))
+
 
 
