@@ -42,12 +42,12 @@
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
 #   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
 #   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
 #   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 ###...........................................................................
@@ -57,7 +57,7 @@
 options(scipen = 100) # for non-exponential display of numeric values
 origin <- "1970-01-01"
 aktuell <- as.numeric(format(Sys.Date(), "%Y"))
-# runyear <- 2018
+# runyear <- 2020
 prec.fac.1 <- 0.2 # before  2010           --- ARG100 Tipping Bucket Raingauge
 prec.fac.2 <- 0.1 # since 2010/07/26 01:30 --- Young Raingauge 52203 - SN TB07216
 
@@ -820,7 +820,7 @@ for (year in runyear) {#2002:aktuell
     db.samet.soil$WL[1:9913] <- round(calc.wt(as.numeric(db.samet.soil$WT_raw[1:9913])) - 15, 2) / 100
     db.samet.soil$WL[9914:17520] <- round(calc.wt(as.numeric(db.samet.soil$WT_raw[9914:17520])) - 11.5, 2) / 100
     
-  } else if (year %in% c(2011:2019)) {
+  } else if (year %in% c(2011:2025)) {
     db.samet.soil$WT <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
     db.samet.soil$WL <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)) - 11.5, 2) / 100
   }
