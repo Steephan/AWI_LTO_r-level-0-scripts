@@ -51,7 +51,7 @@ for (year_i in run.year){#2013:2016 2012:aktuell
   ##
   ## columns: 2 (date table) and number of input table (storing table)
   ###.........................................................................
-  cat("\nProcessing year",year_i,"\n====================\n\n")
+  # cat("\nProcessing year",year_i,"\n====================\n\n")
   start.date <-as.POSIXct(paste(year_i,"-01-01 00:00:00",sep=""),format='%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date   <-as.POSIXct(paste(year_i,"-",12,"-",31," 23:30:00",sep=""),format='%Y-%m-%d %H:%M:%S', tz = "UTC")
   read.int <- "1 h" # reading interval of measurements
@@ -70,7 +70,7 @@ for (year_i in run.year){#2013:2016 2012:aktuell
   ##
   ###.........................................................................
   inz.path<-paste0(p.1$w[p.1$n=="RAW.p"],"TVCHole12015/")
-  files2read<-list.files(inz.path,pattern="*.csv")
+  files2read<-list.files(inz.path,pattern="*.dat")
   ###.........................................................................
   ## step 1.06 loop 2 over all files ----
   ##

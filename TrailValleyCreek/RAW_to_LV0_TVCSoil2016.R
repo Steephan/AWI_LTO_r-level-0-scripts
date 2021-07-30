@@ -20,12 +20,12 @@
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/database_R/settings/path_windoof.txt", sep = "\t", header = T)
 #   p.1maint <- read.table("N:/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("N:/sparc/LTO/R_database/database_R/settings/db_func.R")
 # } else {
 #   p.1 <- read.table("/sparc/LTO/R_database/database_R/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
 #   p.1maint <- read.table("/sparc/LTO/R_database/database_R/settings/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("/sparc/LTO/R_database/database_R/settings/db_func.R")
 # }
 ###...........................................................................
@@ -35,7 +35,7 @@
 options(scipen = 100) # for non-exponential display of numeric values
 origin <- "1970-01-01"
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
-years <- 2016:recent.year
+# run.year <- 2016:recent.year
 #run.year <- years
 ###...........................................................................
 ## step 1.03 loop 1 over years -----

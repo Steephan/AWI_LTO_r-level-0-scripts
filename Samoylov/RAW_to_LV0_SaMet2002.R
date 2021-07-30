@@ -790,20 +790,20 @@ for (year in runyear) {#2002:aktuell
   ##
   ###...........................................................................
   # - [CS616_PA_uS] < 19 --> no value --> WL waterlevel is too low or frozing/thawing
-  # - [CS616_PA_uS] < 27 --> use this calculation: (0.01831394*[CS616_PA_uS]^3-1.2398*[CS616_PA_uS]^2+28.84699187*[CS616_PA_uS]-224.42499308)
-  # - [CS616_PA_uS] > 27 --> use this calculation: (0.06194726*[CS616_PA_uS]^2-1.7673294*[CS616_PA_uS]+13.66709591)
+  # - [CS616_PA_uS] < 27 --> use this calculation: (0.01831394*[CS616_PA_uS]^3 - 1.2398*[CS616_PA_uS]^2 + 28.84699187*[CS616_PA_uS] - 224.42499308)
+  # - [CS616_PA_uS] > 27 --> use this calculation: (0.06194726*[CS616_PA_uS]^2 - 1.7673294*[CS616_PA_uS] + 13.66709591)
   #db.samet.soil <- as.data.frame(db.samet.soil)
   
-  #data.in <- db.samet.soil$WT_raw;lower.v=19;threshhold=27
-  calc.wt <- function(data.in, lower.v = 19, threshhold = 27) {
+  #data.in <- db.samet.soil$WT_raw;lower.v=19;threshold=27
+  calc.wt <- function(data.in, lower.v = 19, threshold = 27) {
     if (length(na.omit(as.numeric(data.in))) < 1) {return(data.in)} else {
       data.out <- data.in <- as.numeric(data.in)
       no     <- which(data.in < lower.v )
       low    <- which(data.in >= lower.v & data.in < threshhold)
-      upper  <- which(data.in >= threshhold) ## 2020-03-09 Threshhold changed to threshhold
+      upper  <- which(data.in >= threshold) 
       data.out[no] <- NA
       if (length(low) >= 1) {
-        data.out[low] <- ((0.01831394 * data.in[low]^3) - (1.2398 * data.in[low]^2) + (28.84699187 * data.in[low]) - 224.42499308)
+        data.out[low  ] <- ((0.01831394 * data.in[low]^3) - (1.2398 * data.in[low]^2) + (28.84699187 * data.in[low]) - 224.42499308)
       }
       if (length(upper) >= 1) {
         data.out[upper] <- ((0.06194726 * data.in[upper]^2) - (1.7673294 * data.in[upper]) + 13.66709591)
@@ -812,17 +812,17 @@ for (year in runyear) {#2002:aktuell
     }
   }
   if (year %in% c(2007:2009)) {
-    db.samet.soil$WT <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
-    db.samet.soil$WL <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)) - 15, 2) / 100
+    db.samet.soil$WT             <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
+    db.samet.soil$WL             <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)) - 15, 2) / 100
   } else if (year %in% c(2010)) {
     # change of sensor at 26.7.2010
-    db.samet.soil$WT <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
-    db.samet.soil$WL[1:9913] <- round(calc.wt(as.numeric(db.samet.soil$WT_raw[1:9913])) - 15, 2) / 100
+    db.samet.soil$WT             <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
+    db.samet.soil$WL[1:9913]     <- round(calc.wt(as.numeric(db.samet.soil$WT_raw[1:9913])) - 15, 2) / 100
     db.samet.soil$WL[9914:17520] <- round(calc.wt(as.numeric(db.samet.soil$WT_raw[9914:17520])) - 11.5, 2) / 100
     
   } else if (year %in% c(2011:2025)) {
-    db.samet.soil$WT <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
-    db.samet.soil$WL <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)) - 11.5, 2) / 100
+    db.samet.soil$WT             <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)), 2) / 100
+    db.samet.soil$WL             <- round(calc.wt(as.numeric(db.samet.soil$WT_raw)) - 11.5, 2) / 100
   }
   
   ###...........................................................................

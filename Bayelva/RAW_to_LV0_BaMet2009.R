@@ -74,13 +74,13 @@
 
 # options(scipen = 100) # for non-exponential display of numeric values
 # 
-# origin <- "1970-01-01"
+origin <- "1970-01-01"
 # input folders  ----
 folders <- c(paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk0/"),
            paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk1/"),
            paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2015/"),
            #   paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/2016/" ),
-           paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2015/"),
+           #   paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2015/"),
            paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk2/"),
            paste0(p.1$w[p.1$n == "ONL.p"], "BaMet2015/"))
 
@@ -88,7 +88,7 @@ folders <- c(paste0(p.1$w[p.1$n == "RAW.p"], "BaMet2010/bk0/"),
 ###.........................................................................
 #### to run this script separately, you have to set run.year:
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
-# run.year <- 2020#recent.year
+# run.year <- 2021#recent.year
 ###.........................................................................
 # loop over years ----
 for (year in run.year) {
