@@ -9,6 +9,7 @@
 ###............................................................................
 ##
 ## last modifications:
+## 2021-09-22 SL Snow correction set from 1.august 0:00 to 31.July next year (attention leap years implemted)
 ## 2021-07-28 SL add SWE calculation
 ## 2021-05-06 SL adapted to refresh app
 ## 2021-03-25 SL git path and temperature correction
@@ -197,12 +198,14 @@ for (year.i in as.numeric(run.year)) {# 2012:recent.year
   autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year.i)),3:14])) # the new one based on maximum dist in august
   
   
-  snow.free <- c(which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])),
-                 which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])))
+  # snow.free <- c(which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])),
+  #                which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])))
+  snow.free <- c(which(db.sasnow[, 1]==paste0(year.i,"-09-01 00:00")),which(db.sasnow[, 1]==paste0(year.i,"-09-01 00:00")))
+  
   
   for (i in 1:12) {
     db.sasnow[1:snow.free[1], 86 + i] <- na.minus(spring.corr[i], as.numeric(db.sasnow[1:snow.free[1], 25 + i]))
-    db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
+    #db.sasnow[snow.free[1]:snow.free[2], 86 + i] <- 0 # snowfree
     db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
   }
   
