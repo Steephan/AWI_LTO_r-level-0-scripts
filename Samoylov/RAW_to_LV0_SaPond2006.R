@@ -22,16 +22,19 @@
 
 #############################################################################
 # to run this script seperat, you have to uncomment the next 10 lines!
-rm(list=ls())
-if (.Platform$OS.type == "windows") {
-  path<-read.table("N:/geo5/SoilData/doc/scripts/database_R/settings/sa_path_windoof.txt",sep="\t",header=T)
-  maint<-read.table("N:/geo5/SoilData/doc/scripts/database_R/settings/sa_maintance.txt",sep="\t",header=T)
-  source("N:/geo5/SoilData/doc/scripts/database_R/settings/db_func.R")
-}else{
-  path<-read.table("/geo5/SoilData/doc/scripts/database_R/settings/path_linux.txt",sep="\t",header=T, fileEncoding="UTF-8")
-  maint<-read.table("/geo5/SoilData/doc/scripts/database_R/settings/maintance.txt",sep="\t",header=T)
-  source("/geo5/SoilData/doc/scripts/database_R/settings/db_func.R")
-}
+# rm(list = ls())
+# if (.Platform$OS.type == "windows") {
+#   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
+#   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# } else {
+#   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
+#   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
+#   
+#   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
+# }
+###...........................................................................
 #############################################################################
 #
 # there is a software update in 2009 
@@ -42,12 +45,12 @@ if (.Platform$OS.type == "windows") {
 # update if necessary:
 start.year <-2006 ## 2006
 end.year   <-2014 ## 2014
-
+# run.year <- start.year:end.year
 #############################################################################
 
 options(warn=-1)# necessary! ... there are some strange warnings 
-in.path    <-paste0(path$w[path$n=="RAW.p"],"SaPond2006/")
-out.path   <-paste0(path$w[path$n=="LV0.p"],"SaPond2006/00_full_dataset/")
+in.path    <-paste0(p.1$w[p.1$n=="RAW.p"],"SaPond2006/")
+out.path   <-paste0(p.1$w[p.1$n=="LV0.p"],"SaPond2006/00_full_dataset/")
 origin     <-"1970-01-01"
 
 
@@ -90,9 +93,9 @@ for(kk in (1:length(files2read))){#1:length(files2read)
                            "radio1_mV","radio2_mV",
                            "snow_m_DT")
    data.temp$Waterlevel_mV<-data.temp$Waterlevel_mV/(-2500)
-   data.temp$radio1_Wm2 <-data.temp$radio1_mV*1000/13.3 # sehr dumm gelaufen, im cr1000 programm wurden die gemessen
-   data.temp$radio2_Wm2 <-data.temp$radio2_mV*1000/14.7 # radio-werte mit deren sd-werte ueberschrieben...nutzlos!!!
-   data.temp$snow_m_TCDT<-data.temp$snow_m_DT*((data.temp[,8]+273.15)/273.15)^.5
+   data.temp$radio1_Wm2 <-data.temp$radio1_mV * 1000/13.3 # sehr dumm gelaufen, im cr1000 programm wurden die gemessen
+   data.temp$radio2_Wm2 <-data.temp$radio2_mV * 1000/14.7 # radio-werte mit deren sd-werte ueberschrieben...nutzlos!!!
+   data.temp$snow_m_TCDT<-data.temp$snow_m_DT * ((data.temp[,8]+273.15)/273.15)^.5
    data.temp$ATT_C_1_Avg<-NA
    data.temp$ATT_C_2_Avg<-NA
    data.temp$CTT_C_1_Avg<-NA
@@ -141,12 +144,12 @@ colnames(db.sapond)<-c("UTC","batt_U",
                        "Tw_fx_edg_33","Tw_fx_edg_20","Tw_fx_edg_0","Tair_edg_9","Tair_edg_111",
                        "Ts_0", "Ts_16","Ts_33","Tw_10","Tw_15",
                        "PA_uS_1","PA_uS_2","PA_uS_3","PA_uS_4","PA_uS_5",
-                       "radio1_mV","radio2_mV","NetRad_1","NetRad_2",
+                       "Rad_raw_edg","Rad_raw_cen","RadNet_edg","RadNet_cen",
                        "distraw","distcor",
                        "ATT_dw","ATT_up","CTT_dw","CTT_up",
                        "WT")
 
-db.sapond<-db.sapond[,-c(24:25)]# remove radio_mV
+db.sapond<-db.sapond[,-c(24:25)]# remove "Rad_raw_..."
 db.sapond<-db.sapond[,c(1,2,14,15,16,13:9,8,7,6,17,18,5,4,3,19:32)]# rearrangement
 db.sapond[,1]<-format( as.POSIXct(db.sapond[,1],origin=origin,tz="UTC"),format='%Y-%m-%d %H:%M')
 

@@ -11,8 +11,9 @@
 ###..........................................................................
 ##
 ##   last modification: ----
+##   2021-11-01 SL cable incorrectly switched implementation
 ##   2021-05-12 SL adapted to git, runnerapp and content management
-##      - 2018-2019: 2 cables were mixed (50m & 90m)
+##      -  cable incorrectly switched form "2018-07-10 06:00" to "2021-09-21 00:00"
 ##   
 ##
 ##
@@ -39,7 +40,7 @@
 ###..........................................................................
 options(scipen=100) # for non-exponential display of numeric values
 origin  <- "1970-01-01"
-#run.year <-as.numeric(format(Sys.Date(),"%Y"))
+#run.year <- 2021
 ###..........................................................................
 ## step 1.03 loop 1 over years ----
 ##
@@ -214,16 +215,23 @@ for (year_i in run.year){#2009:aktuell
   ###..........................................................................
   
   if(year_i==2018){
+    # cable incorrectly switched form "2018-07-10 06:00" to "2021-09-21 00:00"
     reihe.a <- db.sdhole[762:1460, "Ts_5000"]
     reihe.b <- db.sdhole[762:1460, "Ts_9000"]
     db.sdhole[762:1460, "Ts_5000"] <- reihe.b
     db.sdhole[762:1460, "Ts_9000"] <- reihe.a
-  }
-  if(year_i==2019){# change 1460 when you change the cables back
-    reihe.a <- db.sdhole[1:1460, "Ts_5000"]
-    reihe.b <- db.sdhole[1:1460, "Ts_9000"]
-    db.sdhole[1:1460, "Ts_5000"] <- reihe.b
-    db.sdhole[1:1460, "Ts_9000"] <- reihe.a
+  }else if(year_i%in%c(2019,2020)){
+    # cable incorrectly switched form "2018-07-10 06:00" to "2021-09-21 00:00"
+    reihe.a <- db.sdhole[, "Ts_5000"]
+    reihe.b <- db.sdhole[, "Ts_9000"]
+    db.sdhole[, "Ts_5000"] <- reihe.b
+    db.sdhole[, "Ts_9000"] <- reihe.a
+  }else if(year_i==2021){
+    # cable incorrectly switched form "2018-07-10 06:00" to "2021-09-21 00:00"
+    reihe.a <- db.sdhole[1:1053, "Ts_5000"]
+    reihe.b <- db.sdhole[1:1053, "Ts_9000"]
+    db.sdhole[1:1053, "Ts_5000"] <- reihe.b
+    db.sdhole[1:1053, "Ts_9000"] <- reihe.a
   }
   
   

@@ -57,7 +57,7 @@
 options(scipen = 100) # for non-exponential display of numeric values
 origin <- "1970-01-01"
 aktuell <- as.numeric(format(Sys.Date(), "%Y"))
-# runyear <- 2020
+# run.year <- 2021
 prec.fac.1 <- 0.2 # before  2010           --- ARG100 Tipping Bucket Raingauge
 prec.fac.2 <- 0.1 # since 2010/07/26 01:30 --- Young Raingauge 52203 - SN TB07216
 
@@ -65,7 +65,7 @@ prec.fac.2 <- 0.1 # since 2010/07/26 01:30 --- Young Raingauge 52203 - SN TB0721
 ## step 1.03 loop 1 over years ----
 ##
 ###...........................................................................
-for (year in runyear) {#2002:aktuell
+for (year in run.year) {#2002:aktuell
   
   ###...........................................................................
   ## step 1.04 set 2 empty tables with length of year ----
@@ -799,7 +799,7 @@ for (year in runyear) {#2002:aktuell
     if (length(na.omit(as.numeric(data.in))) < 1) {return(data.in)} else {
       data.out <- data.in <- as.numeric(data.in)
       no     <- which(data.in < lower.v )
-      low    <- which(data.in >= lower.v & data.in < threshhold)
+      low    <- which(data.in >= lower.v & data.in < threshold)
       upper  <- which(data.in >= threshold) 
       data.out[no] <- NA
       if (length(low) >= 1) {
@@ -838,7 +838,7 @@ for (year in runyear) {#2002:aktuell
   write.table(db.samet.rad, paste0(p.1$w[p.1$n == "LV0.p"], "SaMet2002/02_radiation/SaMet2002_Rad_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
   write.table(db.samet.soil, paste0(p.1$w[p.1$n == "LV0.p"], "SaMet2002/03_soil/SaMet2002_Soil_", year, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
   #
-  #cat("\n#\n# SaMet2002 ", year, " without problems!\n#\n") # main output
+  cat("\n#\n# SaMet2002 ", year, " without problems!\n#\n") # main output
   
 } # end loop over years
 

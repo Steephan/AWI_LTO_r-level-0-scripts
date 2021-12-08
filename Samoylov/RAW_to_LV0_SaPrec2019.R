@@ -48,7 +48,7 @@
 options(scipen=100) # for non-exponential display of numeric values
 origin  <- "1970-01-01"
 aktuell <-as.numeric(format(Sys.Date(),"%Y"))
-#run.year<-2019:aktuell
+# run.year<-2019:aktuell
 ###.........................................................................
 ## step 1.03 loop 1 over years ----
 ##
@@ -59,7 +59,7 @@ for (year in run.year){#2013:2016 2012:aktuell
   ##
   ## columns: 2 (date table) and number of input table (storing table)
   ###.........................................................................
-  cat("\nProcessing year",year,"\n====================\n\n")
+  #cat("\nProcessing year",year,"\n====================\n\n")
   start.date <-as.POSIXct(paste(year,"-01-01 00:00:00",sep=""),format='%Y-%m-%d %H:%M:%S', tz = "UTC")
   end.date   <-as.POSIXct(paste(year,"-",12,"-",31," 23:30:00",sep=""),format='%Y-%m-%d %H:%M:%S', tz = "UTC")
   read.int <- "1 h" # reading interval of measurements
@@ -90,7 +90,7 @@ for (year in run.year){#2013:2016 2012:aktuell
     ##
     ## set temporal colnames
     ###.........................................................................
-    cat("\nprocessing ",files2read[i],"\n====================\n\n")
+    #cat("\nprocessing ",files2read[i],"\n====================\n\n")
     dada<-read.table(paste(inz.path,files2read[i],sep=""),sep=",",dec=".",header=F,skip=4, fill = TRUE,na="NAN")
 
     colnames(dada) = paste0("V",seq_len(ncol(dada)))
@@ -100,7 +100,7 @@ for (year in run.year){#2013:2016 2012:aktuell
     ###.........................................................................
 
     if(as.numeric(substr(lapply(dada[1,1],as.character),1,4))>year || as.numeric(substr(lapply(dada[length(dada[,1]),1],as.character),1,4))<year) {next} # skip file if wrong year
-    cat(paste(dada[1,1],"     to     ",dada[length(dada[,1]),1],"    ",files2read[i]))
+    #cat(paste(dada[1,1],"     to     ",dada[length(dada[,1]),1],"    ",files2read[i]))
     ###.........................................................................
     ## step 1.10 check file for double entries ----
     ##
@@ -191,9 +191,9 @@ for (year in run.year){#2013:2016 2012:aktuell
   write.table(db.saprec[as.numeric(format(as.POSIXct(db.saprec[,1],format='%Y-%m-%d %H:%M',origin=origin, tz = "UTC"),format='%Y'))==year, ],
               paste0(p.1$w[p.1$n=="LV0.p"],"SaPrec2019/00_full_dataset/SaPrec2019_",year,"_lv0.dat"),quote = F,dec=".",sep=",",row.names=F)
 
-
+cat("#\n# SaPrec2019 ",year," without problems!\n#\n")
 } # end loop over years
 
-cat("\n#\n# SaPrec2019 ",year," without problems!\n#\n")
+
 
 

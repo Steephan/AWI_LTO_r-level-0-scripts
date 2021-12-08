@@ -6,6 +6,8 @@
 ##
 ##   by: Stephan.Lange@awi.de
 ##   last modified:
+##   2021-11-11 SL rename WT to WL
+##   2021-11-10 SL adapted to runapp, new dsn corrections and waterlevel calculations
 ##   2020-10-30 CL adapted to script guidelines and implementation in Samoylov_MAIN.R
 ##
 ###............................................................................
@@ -25,12 +27,12 @@
 # if (.Platform$OS.type == "windows") {
 #   p.1 <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_win.txt", sep = "\t", header = T)
 #   p.1maint <- read.table("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("N:/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # } else {
 #   p.1 <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/path_linux.txt", sep = "\t", header = T, fileEncoding = "UTF-8")
 #   p.1maint <- read.table("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/settings/maintenance.files/maintance.txt", sep = "\t", header = T)
-#   
+# 
 #   source("/sparc/LTO/R_database/Time_series_preprocessing/required-scripts-and-files/functions/db_func.R")
 # }
 ###............................................................................
@@ -39,9 +41,9 @@
 ###............................................................................
 # to run this script separately, you have to set run.year:
 #
-# origin <- "1970-01-01"
+origin <- "1970-01-01"
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
-# run.year <- recent.year
+# run.year <- 2014
 
 # set option
 ll <- 4
@@ -50,7 +52,7 @@ ll <- 4
 ## step 1.03
 ## loop 1 over years
 ###............................................................................
-for (year_i in runyear) {
+for (year_i in run.year) {
   ###............................................................................
   ## step 1.04
   ## set 2 empty tables with length of year_i
@@ -75,13 +77,13 @@ for (year_i in runyear) {
   compl.cold <- matrix(ncol = 2, nrow = length(seq(start.date, end.date, by = "30 min")))
   compl.warm <- matrix(ncol = 2, nrow = length(seq(start.date, end.date, by = "30 min")))
   compl.dyna <- matrix(ncol = 2, nrow = length(seq(start.date, end.date, by = "30 min")))
-
+  
   db.sasoil.t[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
   db.sasoil.tdr[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
   db.sasoil.cold[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
   db.sasoil.warm[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
   db.sasoil.dyna[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
-
+  
   compl.t[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
   compl.tdr[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
   compl.cold[, 1] <- as.numeric(as.POSIXct(seq(start.date, end.date, by = "30 min"), format = "%Y-%m-%d %H:%M:%S"))
@@ -98,25 +100,25 @@ for (year_i in runyear) {
   ###............................................................................
   inz.01.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/01_Temp/")
   files.01 <- list.files(inz.01.path, pattern = "*.dat")
-
+  
   inz.02.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/02_Data_TDR/")
   files.02 <- list.files(inz.02.path, pattern = "*.dat")
-
+  
   inz.03.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/06_Data_Cold/")
   files.03 <- list.files(inz.03.path, pattern = "*.dat")
-
+  
   inz.04.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/07_Data_Warm/")
   files.04 <- list.files(inz.04.path, pattern = "*.dat")
-
+  
   inz.05.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2012/08_Data_Dyna/")
   files.05 <- list.files(inz.05.path, pattern = "*.dat")
   ###............................................................................main input tasks             main input tasks
-  ## step 1.06a loop 2 over all temperature files -----
+  ## soil temperature -----
   ## 
   ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.01)) { # soil temperature 1
-
+      
       ###............................................................................
       ## step 1.07 read one file (skip headers, set NA-values)  ----
       ## 
@@ -124,13 +126,13 @@ for (year_i in runyear) {
       ###............................................................................
       # #cat("\nprocessing ",files.01[i],"\n====================\n\n")
       dada.t <- read.table(paste(inz.01.path, files.01[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
-
+      
       colnames(dada.t) <- paste0("V", seq_len(ncol(dada.t)))
       ###............................................................................
       ## step 1.09 ----
       ## check file if dates are in running year_i of loop 1
       ###............................................................................
-
+      
       if (as.numeric(substr(lapply(dada.t[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.t[length(dada.t[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
@@ -144,7 +146,7 @@ for (year_i in runyear) {
       ## step 1.11 ----
       ## convert date to numeric value
       ###............................................................................
-
+      
       dada.t[, 1] <- as.numeric(as.POSIXct(dada.t[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
       ###............................................................................
       ## step 1.12a ----
@@ -157,28 +159,28 @@ for (year_i in runyear) {
         "Ts_rim_52", "Ts_rim_69", "Ts_rim_95", "Ts_rim_104",
         "Ts_cen_5", "Ts_cen_15", "Ts_cen_28", "Ts_cen_45",
         "Ts_cen_52", "Ts_cen_72", "Ts_cen_90", "Ts_cen_100",
-
+        
         # "CM3Up_1"     ,"CM3Up_2"     ,"CM3Dn_1"     ,"CM3Dn_2"      ,# 2 radiation sensors
         "SwIn_rim", "SwIn_cen", "SwOut_rim", "SwOut_cen", # 2 radiation sensors
         # "CG3UpCo_1"   ,"CG3UpCo_2"   ,"CG3DnCo_1"   ,"CG3DnCo_2"    ,# calculated with wrong calibration ?
         "LwIn_rim", "LwIn_cen", "LwOut_rim", "LwOut_cen",
         "G_cen_95", "G_cen_13", "G_rim_98", "G_rim_13", # 4 Heatflux plates
-
+        
         "distcor", "Tair_70", # 1 snowdepth sensor + temperature at 70cm
         # "CG3Up_1"     ,"CG3Up_2"     ,"CG3Dn_1"     ,"CG3Dn_2"      ,
         "LwIn_rim_raw", "LwIn_cen_raw", "LwOut_rim_raw", "LwOut_cen_raw",
-
+        
         # "NR01_rim_1"    ,"NR01_rim_2"    ,"NR01_rim_3"    ,"NR01_rim_4"     ,
         # "NR01_cen_1"    ,"NR01_cen_2"    ,"NR01_cen_3"    ,"NR01_cen_4"     ,
         "SwIn_rim_mV", "SwOut_rim_mV", "LwIn_rim_mV", "LwOut_rim_mV",
         "SwIn_cen_mV", "SwOut_cen_mV", "LwIn_cen_mV", "LwOut_cen_mV",
-
+        
         "Tsen_NR01_rim", "Tsen_NR01_cen",
         "distraw", "SQsn"
       )
-
+      
       if (i <= 50) {
-
+        
         # ab 2016
         # Const CM3Up_Sens_1 = 11.5
         # Const CM3Dn_Sens_1 = 15.09
@@ -188,32 +190,32 @@ for (year_i in runyear) {
         # Const CM3Dn_Sens_2 = 19.63
         # Const CG3Up_Sens_2 = 7.97
         # Const CG3Dn_Sens_2 = 7.47
-        dada.t$SwIn_rim <- (dada.t$SwIn_rim_mV * 1000) / 13.79
-        dada.t$SwOut_rim <- (dada.t$SwOut_rim_mV * 1000) / 15.84
-        dada.t$LwIn_rim_raw <- (dada.t$LwIn_rim_mV * 1000) / 9.34
-        dada.t$LwOut_rim_raw <- (dada.t$LwOut_rim_mV * 1000) / 7.79
-        dada.t$SwIn_cen <- (dada.t$SwIn_cen_mV * 1000) / 14.02
-        dada.t$SwOut_cen <- (dada.t$SwOut_cen_mV * 1000) / 14.76
-        dada.t$LwIn_cen_raw <- (dada.t$LwIn_cen_mV * 1000) / 7.19
-        dada.t$LwOut_cen_raw <- (dada.t$LwOut_cen_mV * 1000) / 8.88
-
-
-        dada.t$LwIn_rim <- dada.t$LwIn_rim_raw + 5.67 * 10^-8 * (dada.t$Tsen_NR01_rim + 273.15)^4
-        dada.t$LwOut_rim <- dada.t$LwOut_rim_raw + 5.67 * 10^-8 * (dada.t$Tsen_NR01_rim + 273.15)^4
-        dada.t$LwIn_cen <- dada.t$LwIn_cen_raw + 5.67 * 10^-8 * (dada.t$Tsen_NR01_cen + 273.15)^4
-        dada.t$LwOut_cen <- dada.t$LwOut_cen_raw + 5.67 * 10^-8 * (dada.t$Tsen_NR01_cen + 273.15)^4
+        dada.t$SwIn_rim       <- (dada.t$SwIn_rim_mV  * 1000) / 13.79
+        dada.t$SwOut_rim      <- (dada.t$SwOut_rim_mV * 1000) / 15.84
+        dada.t$LwIn_rim_raw   <- (dada.t$LwIn_rim_mV  * 1000) /  9.34
+        dada.t$LwOut_rim_raw  <- (dada.t$LwOut_rim_mV * 1000) /  7.79
+        dada.t$SwIn_cen       <- (dada.t$SwIn_cen_mV  * 1000) / 14.02
+        dada.t$SwOut_cen      <- (dada.t$SwOut_cen_mV * 1000) / 14.76
+        dada.t$LwIn_cen_raw   <- (dada.t$LwIn_cen_mV  * 1000) /  7.19
+        dada.t$LwOut_cen_raw  <- (dada.t$LwOut_cen_mV * 1000) /  8.88
+        
+        
+        dada.t$LwIn_rim       <- dada.t$LwIn_rim_raw  + 5.67 * 10^-8 * (dada.t$Tsen_NR01_rim + 273.15)^4
+        dada.t$LwOut_rim      <- dada.t$LwOut_rim_raw + 5.67 * 10^-8 * (dada.t$Tsen_NR01_rim + 273.15)^4
+        dada.t$LwIn_cen       <- dada.t$LwIn_cen_raw  + 5.67 * 10^-8 * (dada.t$Tsen_NR01_cen + 273.15)^4
+        dada.t$LwOut_cen      <- dada.t$LwOut_cen_raw + 5.67 * 10^-8 * (dada.t$Tsen_NR01_cen + 273.15)^4
       }
       ##  hier fehlen noch die einzelnen Tiefen aller Jahre
-
+      
       dada.t$Dsn <- 1.38 - dada.t$distcor
-
-
-
-
-
-
-
-
+      
+      
+      
+      
+      
+      
+      
+      
       dada.t <- dada.t[, c(
         "UTC", "Tpan_CR3000", "Ubat",
         "Tair_70",
@@ -221,41 +223,41 @@ for (year_i in runyear) {
         "Ts_cen_52", "Ts_cen_72", "Ts_cen_90", "Ts_cen_100",
         "Ts_rim_1", "Ts_rim_7", "Ts_rim_22", "Ts_rim_38",
         "Ts_rim_52", "Ts_rim_69", "Ts_rim_95", "Ts_rim_104",
-
+        
         "SwIn_cen", "SwIn_rim",
         "SwOut_cen", "SwOut_rim",
         "SwIn_cen_mV", "SwIn_rim_mV",
         "SwOut_cen_mV", "SwOut_rim_mV",
-
+        
         "LwIn_cen", "LwIn_rim",
         "LwOut_cen", "LwOut_rim",
         "LwIn_cen_raw", "LwIn_rim_raw",
         "LwOut_cen_raw", "LwOut_rim_raw",
         "LwIn_cen_mV", "LwIn_rim_mV",
         "LwOut_cen_mV", "LwOut_rim_mV",
-
+        
         "Tsen_NR01_cen", "Tsen_NR01_rim",
-
+        
         "G_cen_13", "G_cen_95", "G_rim_13", "G_rim_98",
-
+        
         "Dsn", "distcor", "distraw", "SQsn"
       )]
-
-
+      
+      
       newdf.t <- merge(compl.t, dada.t, all.x = T, by = "UTC")
-
+      
       ###............................................................................
       ## step 1.15 ----
       ## merge date table with storing table
       ###............................................................................
-
+      
       for (k in 2:(length(db.sasoil.t[1, ]))) {
         db.sasoil.t[, k] <- rowMeans(cbind(db.sasoil.t[, k], newdf.t[, k + 1]), na.rm = T) #
       }
     }
   } # soil temperature
   ###............................................................................soil temperature
-  ## step 1.06b -----
+  ## soil moisture -----
   ## loop 2 over all datatdr files
   ###............................................................................
   if (ll == 4) {
@@ -265,19 +267,19 @@ for (year_i in runyear) {
       ## read one file (skip headers, set NA-values)
       ## set temporal colnames
       ###............................................................................
-      # #cat("\nprocessing ",files.02[i],"\n====================\n\n")
+      # cat("\nprocessing ",files.02[i],"\n====================\n\n")
       dada.tdr <- read.table(paste(inz.02.path, files.02[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
-
+      
       colnames(dada.tdr) <- paste0("V", seq_len(ncol(dada.tdr)))
       ###............................................................................
       ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
       ###............................................................................
-
+      
       if (as.numeric(substr(lapply(dada.tdr[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.tdr[length(dada.tdr[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
-      #cat(paste(dada.tdr[1, 1], "     to     ", dada.tdr[length(dada.tdr[, 1]), 1], "    ", files.02[i], "\n"))
+      # cat(paste(dada.tdr[1, 1], "     to     ", dada.tdr[length(dada.tdr[, 1]), 1], "    ", files.02[i], "\n"))
       ###............................................................................
       ## step 1.10b ----
       ## check file for double entries
@@ -287,26 +289,26 @@ for (year_i in runyear) {
       ## step 1.11b ----
       ## convert date to numeric value
       ###............................................................................
-
+      
       dada.tdr[, 1] <- as.numeric(as.POSIXct(dada.tdr[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
       ###............................................................................
       ## step 1.12b ----
       ## special case: former files with different columns
       ## set colnames
       ###............................................................................
-
+      
       colnames(dada.tdr) <- c(
         "UTC", "RECORD",
         "E2_cen_95", "E2_cen_72", "E2_cen_44", "E2_cen_14", "E2_rim_9", "E2_sn_20", "E2_sn_5",
         "E2_cen_v_16", "E2_rim_v_22", "E2_rim_24", "E2_rim_38", "E2_rim_52", "E2_rim_100",
-
+        
         "cond_cen_95", "cond_cen_72", "cond_cen_44", "cond_cen_14", "cond_rim_9", "cond_sn_20", "cond_sn_5",
         "cond_cen_v_16", "cond_rim_v_22", "cond_rim_24", "cond_rim_38", "cond_rim_52", "cond_rim_100",
-
+        
         "vwc_cen_95", "vwc_cen_72", "vwc_cen_44", "vwc_cen_14", "vwc_rim_9", "vwc_sn_20", "vwc_sn_5",
         "vwc_cen_v_16", "vwc_rim_v_22", "vwc_rim_24", "vwc_rim_38", "vwc_rim_52", "vwc_rim_100"
       )
-
+      
       ###............................................................................
       ## step 1.12b ----
       ## add additional columns to former dataset
@@ -314,12 +316,12 @@ for (year_i in runyear) {
       for (i in 3:15) { # convert La/L to dielectricity
         dada.tdr[, i] <- dada.tdr[, i]^2
       }
-      dada.tdr$WT_cen_1 <- NA ## TDR
-      dada.tdr$WT_cen_2 <- NA ## SR50
-      dada.tdr$WT_rim_1 <- NA ## TDR
-
+      dada.tdr$WL_cen_1 <- NA ## TDR
+      dada.tdr$WL_cen_2 <- NA ## SR50
+      dada.tdr$WL_rim_1 <- NA ## TDR
+      
       dada.tdr <- dada.tdr[, c(
-        "UTC", "WT_cen_1", "WT_cen_2", "WT_rim_1",
+        "UTC", "WL_cen_1", "WL_cen_2", "WL_rim_1",
         "E2_sn_5", "E2_sn_20",
         "E2_cen_v_16", "E2_cen_14", "E2_cen_44", "E2_cen_72", "E2_cen_95",
         "E2_rim_v_22", "E2_rim_9", "E2_rim_24", "E2_rim_38", "E2_rim_52", "E2_rim_100",
@@ -330,26 +332,26 @@ for (year_i in runyear) {
         "vwc_cen_v_16", "vwc_cen_14", "vwc_cen_44", "vwc_cen_72", "vwc_cen_95",
         "vwc_rim_v_22", "vwc_rim_9", "vwc_rim_24", "vwc_rim_38", "vwc_rim_52", "vwc_rim_100"
       )]
-
+      
       ###............................................................................
       ## step 1.14b ----
       ## merge input data with date table
       ###............................................................................
-
+      
       newdf.tdr <- merge(compl.tdr, dada.tdr, all.x = T, by = "UTC")
-
+      
       ###............................................................................
       ## step 1.15b ----
       ## merge date table with storing table
       ###............................................................................
-
+      
       for (k in 2:(length(db.sasoil.tdr[1, ]))) {
         db.sasoil.tdr[, k] <- rowMeans(cbind(db.sasoil.tdr[, k], newdf.tdr[, k + 1]), na.rm = T) #
       }
     }
   } # soil moisture
   ###............................................................................soil temperature
-  ## step 1.06c -----
+  ## datacold -----
   ## loop 2 over all datacold files
   ###............................................................................
   if (ll == 4) {
@@ -361,13 +363,13 @@ for (year_i in runyear) {
       ###............................................................................
       # #cat("\nprocessing ",files.03[i],"\n====================\n\n")
       dada.cold <- read.table(paste(inz.03.path, files.03[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
-
+      
       colnames(dada.cold) <- paste0("V", seq_len(ncol(dada.cold)))
       ###............................................................................
       ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
       ###............................................................................
-
+      
       if (as.numeric(substr(lapply(dada.cold[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.cold[length(dada.cold[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
@@ -381,7 +383,7 @@ for (year_i in runyear) {
       ## step 1.11b ----
       ## convert date to numeric value
       ###............................................................................
-
+      
       dada.cold[, 1] <- as.numeric(as.POSIXct(dada.cold[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
       ###............................................................................
       ## step 1.12b ----
@@ -404,7 +406,7 @@ for (year_i in runyear) {
         "Usen_w_cen_95", "Usen_w_cen_45", "Usen_w_rim_99", "Usen_w_rim_16",
         "Usen_h_cen_95", "Usen_h_cen_45", "Usen_h_rim_99", "Usen_h_rim_16"
       )
-
+      
       ###............................................................................
       ## step 1.12b ----
       ## add additional columns to former dataset
@@ -421,26 +423,26 @@ for (year_i in runyear) {
       ## step 1.14b ----
       ## merge input data with date table
       ###............................................................................
-
+      
       newdf.cold <- merge(compl.cold, dada.cold, all.x = T, by = "UTC")
-
+      
       ###............................................................................
       ## step 1.15b ----
       ## merge date table with storing table
       ###............................................................................
-
+      
       for (k in 2:(length(db.sasoil.cold[1, ]))) {
         db.sasoil.cold[, k] <- rowMeans(cbind(db.sasoil.cold[, k], newdf.cold[, k + 1]), na.rm = T) #
       }
     }
   } # datacold
   ###............................................................................soil temperature
-  ## step 1.06d -----
+  ## datawarm -----
   ## loop 3 over all datawarm files
   ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.04)) { # soil moisture  1
-
+      
       ###............................................................................
       ## step 1.07b ----
       ## read one file (skip headers, set NA-values)
@@ -448,13 +450,13 @@ for (year_i in runyear) {
       ###............................................................................
       # #cat("\nprocessing ",files.04[i],"\n====================\n\n")
       dada.warm <- read.table(paste(inz.04.path, files.04[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
-
+      
       colnames(dada.warm) <- paste0("V", seq_len(ncol(dada.warm)))
       ###............................................................................
       ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
       ###............................................................................
-
+      
       if (as.numeric(substr(lapply(dada.warm[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.warm[length(dada.warm[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
@@ -468,7 +470,7 @@ for (year_i in runyear) {
       ## step 1.11b ----
       ## convert date to numeric value
       ###............................................................................
-
+      
       dada.warm[, 1] <- as.numeric(as.POSIXct(dada.warm[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
       ###............................................................................
       ## step 1.12b ----
@@ -493,13 +495,13 @@ for (year_i in runyear) {
         "Usen_amp_cen_95", "Usen_amp_cen_45", "Usen_amp_rim_99", "Usen_amp_rim_16",
         "tcond_cen_95", "tcond_cen_45", "tcond_rim_99", "tcond_rim_16"
       )
-
+      
       ###............................................................................
       ## step 1.12b ----
       ## add additional columns to former dataset
       ###............................................................................
-
-
+      
+      
       # dada.warm<-dada.warm[,c("UTC",#"RECORD",
       #                         "U_sen01","U_sen02","U_sen03","U_sen04",
       #                         "U_senamp1","U_senamp2","U_senamp3","U_senamp4",
@@ -510,31 +512,31 @@ for (year_i in runyear) {
         "Usen_amp_cen_45", "Usen_amp_cen_95", "Usen_amp_rim_16", "Usen_amp_rim_99",
         "tcond_cen_45", "tcond_cen_95", "tcond_rim_16", "tcond_rim_99"
       )]
-
+      
       ###............................................................................
       ## step 1.14b ----
       ## merge input data with date table
       ###............................................................................
-
+      
       newdf.warm <- merge(compl.warm, dada.warm, all.x = T, by = "UTC")
-
+      
       ###............................................................................
       ## step 1.15b ----
       ## merge date table with storing table
       ###............................................................................
-
+      
       for (k in 2:(length(db.sasoil.warm[1, ]))) {
         db.sasoil.warm[, k] <- rowMeans(cbind(db.sasoil.warm[, k], newdf.warm[, k + 1]), na.rm = T) #
       }
     }
   } # datawarm
   ###............................................................................soil temperature
-  ## step 1.06e -----
+  ## datadyna -----
   ## loop 4 over all datadyna files
   ###............................................................................
   if (ll == 4) {
     for (i in 1:length(files.05)) { # soil moisture
-
+      
       ###............................................................................
       ## step 1.07b ----
       ## read one file (skip headers, set NA-values)
@@ -542,13 +544,13 @@ for (year_i in runyear) {
       ###............................................................................
       # #cat("\nprocessing ",files.05[i],"\n====================\n\n")
       dada.dyna <- read.table(paste(inz.05.path, files.05[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
-
+      
       colnames(dada.dyna) <- paste0("V", seq_len(ncol(dada.dyna)))
       ###............................................................................
       ## step 1.09b ----
       ## check file if dates are in running year_i of loop 1
       ###............................................................................
-
+      
       if (as.numeric(substr(lapply(dada.dyna[1, 1], as.character), 1, 4)) > year_i || as.numeric(substr(lapply(dada.dyna[length(dada.dyna[, 1]), 1], as.character), 1, 4)) < year_i) {
         next
       } # skip file if wrong year
@@ -562,7 +564,7 @@ for (year_i in runyear) {
       ## step 1.11b
       ## convert date to numeric value
       ###............................................................................
-
+      
       dada.dyna[, 1] <- as.numeric(as.POSIXct(dada.dyna[, 1], format = "%Y-%m-%d %H:%M:%S", origin = origin, tz = "UTC"))
       ###............................................................................
       ## step 1.12b ----
@@ -576,55 +578,55 @@ for (year_i in runyear) {
       ## Sample (4,VHC(),FP2)
       ## EndTable
       ###............................................................................
-
+      
       colnames(dada.dyna) <- c(
         "UTC", "RECORD",
         "td_cen_95", "td_cen_45", "td_rim_99", "td_rim_16",
         "Cv_cen_95", "Cv_cen_45", "Cv_rim_99", "Cv_rim_16"
       )
-
+      
       ###............................................................................
       ## step 1.12b ----
       ## add additional columns to former dataset
       ###............................................................................
-
-
+      
+      
       dada.dyna <- dada.dyna[, c(
         "UTC",
         "td_cen_45", "td_cen_95", "td_rim_16", "td_rim_99",
         "Cv_cen_45", "Cv_cen_95", "Cv_rim_16", "Cv_rim_99"
       )]
-
+      
       ###............................................................................
       ## step 1.14b ----
       ## merge input data with date table
       ###............................................................................
-
+      
       newdf.dyna <- merge(compl.dyna, dada.dyna, all.x = T, by = "UTC")
-
+      
       ###............................................................................
       ## step 1.15b ----
       ## merge date table with storing table
       ###............................................................................
-
+      
       for (k in 2:ncol(dada.dyna)) {
         db.sasoil.dyna[, k] <- rowMeans(cbind(db.sasoil.dyna[, k], newdf.dyna[, k + 1]), na.rm = T) #
       }
     }
   } # datadyna
-
-  ###............................................................................ soil moisture
+  
+  ###............................................................................soil moisture
   ## step 1.16 -----
   ## convert numeric dates back to date format
   ###............................................................................
-
-
-  db.sasoil.t[, 1] <- format(as.POSIXct(db.sasoil.t[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
-  db.sasoil.tdr[, 1] <- format(as.POSIXct(db.sasoil.tdr[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
+  
+  
+  db.sasoil.t[, 1]    <- format(as.POSIXct(db.sasoil.t[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
+  db.sasoil.tdr[, 1]  <- format(as.POSIXct(db.sasoil.tdr[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
   db.sasoil.cold[, 1] <- format(as.POSIXct(db.sasoil.cold[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
   db.sasoil.warm[, 1] <- format(as.POSIXct(db.sasoil.warm[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
   db.sasoil.dyna[, 1] <- format(as.POSIXct(db.sasoil.dyna[, 1], origin = origin, tz = "UTC"), format = "%Y-%m-%d %H:%M")
-
+  
   ###............................................................................
   ## step 1.17 ----
   ## set "sparc" colnames
@@ -637,35 +639,35 @@ for (year_i in runyear) {
     "Ts_cen_52", "Ts_cen_72", "Ts_cen_90", "Ts_cen_100",
     "Ts_rim_1", "Ts_rim_7", "Ts_rim_22", "Ts_rim_38",
     "Ts_rim_52", "Ts_rim_69", "Ts_rim_95", "Ts_rim_104",
-
+    
     "SwIn_cen", "SwIn_rim",
     "SwOut_cen", "SwOut_rim",
     "SwIn_cen_mV", "SwIn_rim_mV",
     "SwOut_cen_mV", "SwOut_rim_mV",
-
+    
     "LwIn_cen", "LwIn_rim",
     "LwOut_cen", "LwOut_rim",
     "LwIn_cen_raw", "LwIn_rim_raw",
     "LwOut_cen_raw", "LwOut_rim_raw",
     "LwIn_cen_mV", "LwIn_rim_mV",
     "LwOut_cen_mV", "LwOut_rim_mV",
-
+    
     "Tsen_NR01_cen", "Tsen_NR01_rim",
-
+    
     "G_cen_13", "G_cen_95", "G_rim_13", "G_rim_98",
-
+    
     "Dsn", "distcor", "distraw", "SQsn"
   )
   db.sasoil.tdr <- as.data.frame(db.sasoil.tdr)
   colnames(db.sasoil.tdr) <- c(
-    "UTC", "WT_cen_1", "WT_cen_2", "WT_rim_1", "E2_sn_5", "E2_sn_20",
+    "UTC", "WL_cen_1", "WL_cen_2", "WL_rim_1", "E2_sn_5", "E2_sn_20",
     "E2_cen_v_16", "E2_cen_14", "E2_cen_44", "E2_cen_72", "E2_cen_95",
     "E2_rim_v_22", "E2_rim_9", "E2_rim_24", "E2_rim_38", "E2_rim_52", "E2_rim_100",
-
+    
     "cond_sn_5", "cond_sn_20",
     "cond_cen_v_16", "cond_cen_14", "cond_cen_44", "cond_cen_72", "cond_cen_95",
     "cond_rim_v_22", "cond_rim_9", "cond_rim_24", "cond_rim_38", "cond_rim_52", "cond_rim_100",
-
+    
     "vwc_sn_5", "vwc_sn_20",
     "vwc_cen_v_16", "vwc_cen_14", "vwc_cen_44", "vwc_cen_72", "vwc_cen_95",
     "vwc_rim_v_22", "vwc_rim_9", "vwc_rim_24", "vwc_rim_38", "vwc_rim_52", "vwc_rim_100"
@@ -689,99 +691,44 @@ for (year_i in runyear) {
     "td_cen_45", "td_cen_95", "td_rim_16", "td_rim_99",
     "Cv_cen_45", "Cv_cen_95", "Cv_rim_16", "Cv_rim_99"
   )
-
+  
   ###............................................................................
   ###............................................................................
   ##
-  ##  calculation of snow height and WT ----
+  ##  calculation of snow height and WL ----
   ##
-  if (year_i == 2018) { # unfrozen 5.5.18 - 9.8.18
-    # aa1<-which(db.sasoil.t[,1]=="2015-05-05 01:30")
-    # aa2<-which(db.sasoil.t[,1]=="2015-08-09 01:00")
-    # aa3<-which(db.sasoil.t[,1]=="2015-12-31 23:30")
-    # db.sasoil.t[aa2:(aa3),47]         <- 1.38 - as.numeric(db.sasoil.t[aa2:aa3,48]) #winter
-    # db.sasoil.t[aa1:(aa2-1),47]       <- 1.38 - as.numeric(db.sasoil.t[aa1:(aa2-1),48]) #summer
-    # db.sasoil.t[  1:(aa1-1),47]       <- 1.38 - as.numeric(db.sasoil.t[  1:(aa1-1),48]) #spring (winter last year)
-    # WT
-    # db.sasoil.tdr$WT_cen[aa1:(aa2-1)] =-3.4408*db.sasoil.tdr$E2_cen_v_16[aa1:(aa2-1)] ^(0.5)+39.105
-    # db.sasoil.tdr$WT_rim[aa1:(aa2-1)] =-3.4408*db.sasoil.tdr$E2_rim_v_22[aa1:(aa2-1)] ^(0.5)+39.105
-  } else if (year_i == 2017) { # unfrozen 18.6.17 - 19.9.17
-    aa1 <- which(db.sasoil.t[, 1] == "2017-06-18 06:00")
-    aa2 <- which(db.sasoil.t[, 1] == "2017-09-19 02:00")
-    aa3 <- which(db.sasoil.t[, 1] == "2017-12-31 23:30")
-    db.sasoil.t[aa2:(aa3), 47] <- 1.38 - as.numeric(db.sasoil.t[aa2:aa3, 48]) # winter
-    db.sasoil.t[aa1:(aa2 - 1), 47] <- as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) # summer
-    db.sasoil.t[1:(aa1 - 1), 47] <- 1.285 - as.numeric(db.sasoil.t[1:(aa1 - 1), 48]) # spring (winter last year)
-    # WT
-    db.sasoil.tdr$WT_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
-    db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
-    db.sasoil.tdr$WT_cen_2[aa1:(aa2 - 1)] <- 1.363 - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48])
-  } else if (year_i == 2016) { # unfrozen 9.6.16 - 25.9.16
-    aa1 <- which(db.sasoil.t[, 1] == "2016-06-09 05:00")
-    aa2 <- which(db.sasoil.t[, 1] == "2016-09-24 09:00")
-    aa4 <- which(db.sasoil.t[, 1] == "2016-07-21 07:30") # new installation heigth at 1.38
-    aa3 <- which(db.sasoil.t[, 1] == "2016-12-31 23:30")
-    db.sasoil.t[aa2:(aa3), 47] <- 1.285 - as.numeric(db.sasoil.t[aa2:aa3, 48]) # winter
-    db.sasoil.t[aa1:(aa2 - 1), 47] <- as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) # summer
-    db.sasoil.t[1:(aa1 - 1), 47] <- 0.879 - as.numeric(db.sasoil.t[1:(aa1 - 1), 48]) # spring (winter last year)
-    # WT
-    db.sasoil.tdr$WT_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
-    db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
-    db.sasoil.tdr$WT_cen_2[aa1:(aa4 - 1)] <- 0.958 - as.numeric(db.sasoil.t[aa1:(aa4 - 1), 48])
-    db.sasoil.tdr$WT_cen_2[aa4:(aa2 - 1)] <- 1.388 - as.numeric(db.sasoil.t[aa4:(aa2 - 1), 48])
-  } else if (year_i == 2015) { # unfrozen 09.6.15 - 24.9.15
-    aa1 <- which(db.sasoil.t[, 1] == "2015-06-09 05:00")
-    aa2 <- which(db.sasoil.t[, 1] == "2015-09-24 05:00")
-    aa3 <- which(db.sasoil.t[, 1] == "2015-12-31 23:30")
-    db.sasoil.t[aa2:(aa3), 47] <- 0.879 - as.numeric(db.sasoil.t[aa2:aa3, 48]) # winter
-    db.sasoil.t[aa1:(aa2 - 1), 47] <- as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) # summer
-    db.sasoil.t[1:(aa1 - 1), 47] <- 0.892 - as.numeric(db.sasoil.t[1:(aa1 - 1), 48]) # spring (winter last year)
-    # WT
-    db.sasoil.tdr$WT_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
-    db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
-    db.sasoil.tdr$WT_cen_2[aa1:(aa2 - 1)] <- 0.958 - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48])
-  } else if (year_i == 2014) { # unfrozen 1.6.14 - 26.9.14
-    aa1 <- which(db.sasoil.t[, 1] == "2014-06-01 02:00")
-    aa2 <- which(db.sasoil.t[, 1] == "2014-09-26 02:00")
-    aa3 <- which(db.sasoil.t[, 1] == "2014-12-31 23:30")
-    db.sasoil.t[aa2:(aa3), 47] <- 0.892 - as.numeric(db.sasoil.t[aa2:aa3, 48]) # winter
-    db.sasoil.t[aa1:(aa2 - 1), 47] <- as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) # summer
-    db.sasoil.t[1:(aa1 - 1), 47] <- 0.869 - as.numeric(db.sasoil.t[1:(aa1 - 1), 48]) # spring (winter last year)
-    # WT
-    db.sasoil.tdr$WT_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
-    db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
-    db.sasoil.tdr$WT_cen_2[aa1:(aa2 - 1)] <- 0.958 - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48])
-  } else if (year_i == 2013) { # unfrozen 8.6.13 - 1.10.13
-    aa1 <- which(db.sasoil.t[, 1] == "2013-06-06 02:00")
-    aa2 <- which(db.sasoil.t[, 1] == "2013-10-01 02:00")
-    aa3 <- which(db.sasoil.t[, 1] == "2013-12-31 23:30")
-    db.sasoil.t[aa2:(aa3), 47] <- 0.869 - as.numeric(db.sasoil.t[aa2:aa3, 48]) # winter
-    db.sasoil.t[aa1:(aa2 - 1), 47] <- as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) # summer
-    db.sasoil.t[1:(aa1 - 1), 47] <- 0.927 - as.numeric(db.sasoil.t[1:(aa1 - 1), 48]) # spring (winter last year)
-    # WT
-    db.sasoil.tdr$WT_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
-    db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
-    db.sasoil.tdr$WT_cen_2[aa1:(aa2 - 1)] <- 0.958 - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48])
-    # plot((3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2-1)]^(0.5) -5 )/100)
-    # lines(db.sasoil.tdr$WT_rim_1)
-    # lines(db.sasoil.tdr$WT_rim_1,col="red")
-  } else if (year_i == 2012) { # unfrozen 1.6.12 - 11.10.12
-    aa1 <- which(db.sasoil.t[, 1] == "2012-06-01 00:00")
-    aa2 <- which(db.sasoil.t[, 1] == "2012-10-11 02:00")
-    aa3 <- which(db.sasoil.t[, 1] == "2012-12-31 23:30")
-    db.sasoil.t[aa2:(aa3), 47] <- 0.927 - as.numeric(db.sasoil.t[aa2:aa3, 48]) # winter
-    db.sasoil.t[aa1:(aa2 - 1), 47] <- as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48]) # summer
-    # db.sasoil.t[  1:(aa1-1),47]       <- 1.38 - as.numeric(db.sasoil.t[  1:(aa1-1),48]) #spring (winter last year)
-    # WT
-    db.sasoil.tdr$WT_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
-    db.sasoil.tdr$WT_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
-    db.sasoil.tdr$WT_cen_2[aa1:(aa2 - 1)] <- 0.958 - as.numeric(db.sasoil.t[aa1:(aa2 - 1), 48])
-  } else {
-    #cat("wrong year")
-  }
+  db.sasoil.t <- as.data.frame(db.sasoil.t)
+  dsn.corr    <- read.table(paste0(p.1$w[p.1$n == "settings.p"], "DSNcorr.files/SaSoil2012_DSN_correction.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NAN")
+  
+  # for (i in 1) {  
+    spring.corr <- as.numeric(c(dsn.corr$FValue[which(dsn.corr$YEAR==(year_i-1))])) # the old from last year_i
+    autum.corr  <- as.numeric(c(dsn.corr$FValue[which(dsn.corr$YEAR==(year_i))]))   # the new one based on maximum dist in august
+    WL.corr     <- as.numeric(c(dsn.corr$WL_cen_2[which(dsn.corr$YEAR==(year_i))])) # the new one based on maximum dist in august
+    aa1 <- which(db.sasoil.t[, 1] == c(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year_i))]))
+    aa2 <- which(db.sasoil.t[, 1] == c(dsn.corr$FDaySnow[which(dsn.corr$YEAR==(year_i))]))
+    aa3 <- which(db.sasoil.t[, 1] == paste0(year_i,"-12-31 23:30"))
+    
+    # Dsn
+    db.sasoil.t$Dsn[  1:(aa1 - 1)] <- spring.corr - as.numeric(db.sasoil.t$distcor[1:(aa1 - 1)]) # spring (winter last year)
+    db.sasoil.t$Dsn[aa1:(aa2 - 1)] <- as.numeric(db.sasoil.t$distcor[aa1:(aa2 - 1)]) - as.numeric(db.sasoil.t$distcor[aa1:(aa2 - 1)]) # summer
+    db.sasoil.t$Dsn[aa2:(aa3    )] <- autum.corr - as.numeric(db.sasoil.t$distcor[aa2:aa3]) # winter
+    # WL
+    db.sasoil.tdr$WL_cen_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_cen_v_16[aa1:(aa2 - 1)]^(0.5) - 16) / 100
+    db.sasoil.tdr$WL_rim_1[aa1:(aa2 - 1)] <- (3.4408 * db.sasoil.tdr$E2_rim_v_22[aa1:(aa2 - 1)]^(0.5) - 22) / 100
+    db.sasoil.tdr$WL_cen_2[aa1:(aa2 - 1)] <- WL.corr - as.numeric(db.sasoil.t$distcor[aa1:(aa2 - 1)])
+    
+    if(dsn.corr$ex2[which(dsn.corr$YEAR==(year_i))]!=0){
+      # special case if sensor is newly installed at a different heigth
+      aa4     <- which(db.sasoil.t[, 1] == c(dsn.corr$ex1[which(dsn.corr$YEAR==(year_i))]))
+      ex.corr <- as.numeric(c(dsn.corr$ex2[which(dsn.corr$YEAR==(year_i))]))
 
-
-
+      db.sasoil.tdr$WL_cen_2[aa1:(aa4 - 1)] <- WL.corr - as.numeric(db.sasoil.t$distcor[aa1:(aa4 - 1)])
+      db.sasoil.tdr$WL_cen_2[aa4:(aa2 - 1)] <- ex.corr - as.numeric(db.sasoil.t$distcor[aa4:(aa2 - 1)])
+    }
+    
+    
+  
+  
   #
   # replace Nan with NA
   for (m1 in 2:50) {
@@ -799,39 +746,39 @@ for (year_i in runyear) {
   for (m5 in 2:9) {
     db.sasoil.dyna[is.nan(as.numeric(db.sasoil.dyna[, m5])), m5] <- NA
   }
-
+  
   ###............................................................................
   ## step 1.18 safe data to txt-file ----
   ## 
   ###............................................................................
   #
   total <- cbind(db.sasoil.t, db.sasoil.tdr[, -1], db.sasoil.cold[, -1], db.sasoil.warm[, -1], db.sasoil.dyna[, -1])
-
+  
   write.table(total,
-    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/00_full_dataset/SaSoil2012_", year_i, "_lv0.dat"),
-    quote = F, dec = ".", sep = ",", row.names = F
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/00_full_dataset/SaSoil2012_", year_i, "_lv0.dat"),
+              quote = F, dec = ".", sep = ",", row.names = F
   )
-
+  
   write.table(db.sasoil.t,
-    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/01_soiltemperature/SaSoil2012_ts_", year_i, "_lv0.dat"),
-    quote = F, dec = ".", sep = ",", row.names = F
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/01_soiltemperature/SaSoil2012_ts_", year_i, "_lv0.dat"),
+              quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.tdr,
-    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/02_Data_TDR/SaSoil2012_tdr_", year_i, "_lv0.dat"),
-    quote = F, dec = ".", sep = ",", row.names = F
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/02_Data_TDR/SaSoil2012_tdr_", year_i, "_lv0.dat"),
+              quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.cold,
-    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/06_Data_Cold/SaSoil2012_cold_", year_i, "_lv0.dat"),
-    quote = F, dec = ".", sep = ",", row.names = F
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/06_Data_Cold/SaSoil2012_cold_", year_i, "_lv0.dat"),
+              quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.warm,
-    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/07_Data_Warm/SaSoil2012_warm_", year_i, "_lv0.dat"),
-    quote = F, dec = ".", sep = ",", row.names = F
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/07_Data_Warm/SaSoil2012_warm_", year_i, "_lv0.dat"),
+              quote = F, dec = ".", sep = ",", row.names = F
   )
   write.table(db.sasoil.dyna,
-    paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/08_Data_Dyna/SaSoil2012_dyna_", year_i, "_lv0.dat"),
-    quote = F, dec = ".", sep = ",", row.names = F
+              paste0(p.1$w[p.1$n == "LV0.p"], "SaSoil2012/08_Data_Dyna/SaSoil2012_dyna_", year_i, "_lv0.dat"),
+              quote = F, dec = ".", sep = ",", row.names = F
   )
-
+  
   cat("\n#\n# sasoil2012 ", year_i, " without problems!\n#\n") # main output
 } # end loop over years

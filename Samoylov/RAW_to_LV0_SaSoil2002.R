@@ -51,13 +51,13 @@
 #
 # origin <- "1970-01-01"
 # recent.year <- as.numeric(format(Sys.Date(), "%Y"))
-# runyear <- 2009
+# run.year <- 2014
 
 ###............................................................................
 ## step 0.03 loop 1 over years ----
 ##
 ###............................................................................
-for (year_i in runyear) {
+for (year_i in run.year) {
   ###............................................................................
   ## step 0.04 set 2 empty tables with length of year_i ----
   ##
@@ -96,8 +96,8 @@ for (year_i in runyear) {
   ## step 0.06 set input.path and list all files ----
   ##
   ###............................................................................
-  
-  
+  #
+  # checking names and years to load only the nessescary files!!!!
   inz.01.path <- paste0(p.1$w[p.1$n == "RAW.p"], "SaSoil2002/01_Temp_v2/")
   files.01 <- list.files(inz.01.path, pattern = "*.dat")
   bui <- matrix(nrow = length(files.01), ncol = 2, 1)
@@ -212,7 +212,7 @@ for (year_i in runyear) {
         
         "Tgs", "Tsurf_cor"
       )
-      dada.t$G_rim <- dada.t$G_rim * (1000 / 60.4)
+      dada.t$G_rim    <- dada.t$G_rim * (1000 / 60.4)
       dada.t$G_center <- dada.t$G_center * (1000 / 61.9)
       dada.t <- dada.t[, -2]
     }
@@ -239,9 +239,9 @@ for (year_i in runyear) {
     ##
     ## set temporal colnames
     ###............................................................................
-    #cat("processing: ", files.02[i], "\n")
+    cat("processing: ", files.02[i], "\n")
     dada.tdr <- read.table(paste(inz.02.path, files.02[i], sep = ""), sep = ",", dec = ".", header = F, skip = 4, fill = TRUE, na = "NAN")
-    
+    cat("n col ",ncol(dada.tdr), "\n")
     colnames(dada.tdr) <- paste0("V", seq_len(ncol(dada.tdr)))
     ###............................................................................
     ## step 1.03 b) check file if dates are in running year_i of loop 1 ----

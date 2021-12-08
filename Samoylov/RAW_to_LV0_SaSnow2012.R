@@ -9,7 +9,9 @@
 ###............................................................................
 ##
 ## last modifications:
-## 2021-09-22 SL Snow correction set from 1.august 0:00 to 31.July next year (attention leap years implemted)
+## 2021-10-14 SL changed SWE calc to sensor 2 and inheritate flag in lvl1 script
+## 2021-10-08 SL T correction with diffenrent T values if first option is flagged
+## 2021-09-22 SL Snow correction set from 1.sep 0:00 to 31.aug next year (attention leap years implemted)
 ## 2021-07-28 SL add SWE calculation
 ## 2021-05-06 SL adapted to refresh app
 ## 2021-03-25 SL git path and temperature correction
@@ -42,7 +44,7 @@
 options(scipen = 100) # for non-exponential display of numeric values
 
 origin <- "1970-01-01"
-# run.year <- 2012:2021
+# run.year <- 2018
 recent.year <- as.numeric(format(Sys.Date(), "%Y"))
 
 ### loop over years ----
@@ -169,8 +171,18 @@ for (year.i in as.numeric(run.year)) {# 2012:recent.year
   ###............................................................................
   ## Snowdepth correction ----
   ## read SaMet2002 Airtemperature for Snowdepth correction
+  ## use A) tair values in 50 cm with flag==0
+  ## use B) tair values in 50 cm of side b if A) is not True
+  ## use C) tair values in 200 cm of side a if A) and B) is not True
   ##
-  clima <- read.table(paste0(p.1$w[p.1$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year.i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[, 1:5]
+  clima <- read.table(paste0(p.1$w[p.1$n == "LV1.p"], "SaMet2002/00_full_dataset/SaMet2002_", year.i, "_lv1.dat"), sep = ",", dec = ".", header = T, fill = TRUE, na = "NA")[, 1:9]
+  tmp1 <- which(clima$Tair_a_50_fl>0)
+  clima$Tair_a_50[tmp1] <- clima$Tair_b_50[tmp1]
+  clima$Tair_a_50_fl[tmp1] <- clima$Tair_b_50_fl[tmp1]
+  
+  tmp2 <- which(clima$Tair_a_50_fl>0)
+  clima$Tair_a_50[tmp2] <- clima$Tair_a_200[tmp2]
+  clima$Tair_a_50_fl[tmp2] <- clima$Tair_a_200_fl[tmp2]
   
   for (ii in 1:12) {
     # overwrite distcor_0-11
@@ -197,9 +209,6 @@ for (year.i in as.numeric(run.year)) {# 2012:recent.year
   spring.corr <- as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year.i-1)),3:14])) # the old from last year.i
   autum.corr <-  as.numeric(c(dsn.corr[which(dsn.corr$YEAR==(year.i)),3:14])) # the new one based on maximum dist in august
   
-  
-  # snow.free <- c(which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])),
-  #                which(db.sasnow[, 1] == paste(dsn.corr$LDaySnow[which(dsn.corr$YEAR==(year.i))])))
   snow.free <- c(which(db.sasnow[, 1]==paste0(year.i,"-09-01 00:00")),which(db.sasnow[, 1]==paste0(year.i,"-09-01 00:00")))
   
   
@@ -209,9 +218,9 @@ for (year.i in as.numeric(run.year)) {# 2012:recent.year
     db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 86 + i] <- na.minus(autum.corr[i], db.sasnow[snow.free[2]:length(db.sasnow[, 1]), 25 + i])
   }
   
-    
-    
-    ## new names ----
+  
+  
+  ## new names ----
   colnames(db.sasnow) <- c("UTC", "Ubat", "Tpan_CR1000", "Tpan_SPA",
                            
                            "ice_2", "ice_3", "ice_4",
@@ -233,12 +242,15 @@ for (year.i in as.numeric(run.year)) {# 2012:recent.year
   #
   db.sasnow <- as.data.frame(db.sasnow)
   
-  db.sasnow$SWE_2 <- as.numeric(db.sasnow$rho_2) * as.numeric(apply(db.sasnow[,26:33],1,max))
-  db.sasnow$SWE_3 <- as.numeric(db.sasnow$rho_3) * as.numeric(apply(db.sasnow[,26:33],1,max))
-  db.sasnow$SWE_4 <- as.numeric(db.sasnow$rho_4) * as.numeric(apply(db.sasnow[,26:33],1,max))
+  # db.sasnow$SWE_2 <- as.numeric(db.sasnow$rho_2) * as.numeric(apply(db.sasnow[,26:30],1,max))
+  # db.sasnow$SWE_3 <- as.numeric(db.sasnow$rho_3) * as.numeric(apply(db.sasnow[,26:30],1,max))
+  # db.sasnow$SWE_4 <- as.numeric(db.sasnow$rho_4) * as.numeric(apply(db.sasnow[,26:30],1,max))
+  db.sasnow$SWE_2 <- as.numeric(db.sasnow$rho_2) * as.numeric(db.sasnow$distcor_2) 
+  db.sasnow$SWE_3 <- as.numeric(db.sasnow$rho_3) * as.numeric(db.sasnow$distcor_2) 
+  db.sasnow$SWE_4 <- as.numeric(db.sasnow$rho_4) * as.numeric(db.sasnow$distcor_2) 
   
   db.sasnow<-db.sasnow[,c(1:13,99:101,14:98)]
-
+  
   write.table(db.sasnow[as.numeric(format(as.POSIXct(db.sasnow[, 1], format = '%Y-%m-%d %H:%M', origin = origin, tz = "UTC"), format = '%Y')) == year.i, -2],
               paste0(p.1$w[p.1$n == "LV0.p"], "SaSnow2012/00_full_dataset/SaSnow2012_", year.i, "_lv0.dat"), quote = F, dec = ".", sep = ",", row.names = F)
   
